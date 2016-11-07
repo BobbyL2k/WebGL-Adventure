@@ -1,7 +1,10 @@
 var scene = new THREE.Scene();
+var bufferScene = new THREE.Scene();
 var GLDom = document.getElementById("GL");
-var width = GLDom.offsetWidth;
-var height = GLDom.offsetHeight;
+var width = 30;
+var height = 30;
+var viewportWidth = GLDom.offsetWidth;
+var viewportHeight = GLDom.offsetHeight;
 var aspect = width / height;
 var camera = new THREE.PerspectiveCamera( 75, aspect, 0.1, 1000 );
 var renderer = new THREE.WebGLRenderer();
@@ -9,7 +12,7 @@ var dbCanvasDom = document.getElementById("debugCanvas");
 var dbCanvasCtx = dbCanvasDom.getContext("2d");
 var pixels = new Uint8Array(width * height * 4);
 var gl;
-renderer.setSize( width, height );
+renderer.setSize( viewportWidth, viewportHeight );
 dbCanvasDom.width = width;
 dbCanvasDom.height = height;
 GLDom.appendChild( renderer.domElement );
@@ -23,7 +26,7 @@ var material = new THREE.MeshNormalMaterial({
     wireframe: false
 });
 var cube = new THREE.Mesh( geometry, material );
-scene.add( cube );
+bufferScene.add( cube );
 camera.position.z = 4;
 
 cameraDefault = {
@@ -32,15 +35,26 @@ cameraDefault = {
     }
 };
 
+
 // var bufferScene = new THREE.Scene();
 var bufferTexture = new THREE.WebGLRenderTarget( 
     width, 
     height, 
     { 
-        minFilter: THREE.LinearFilter, 
+        minFilter: THREE.NearestFilter, 
         magFilter: THREE.NearestFilter, 
-        format: THREE.RGBAFormat
+        format: THREE.RGBAFormat,
     } );
+
+bufferTexture.texture.generateMipmaps = false;
+bufferTexture.stencilBuffer = false;
+bufferTexture.depthTexture = new THREE.DepthTexture();
+
+var bufferGeometry = new THREE.PlaneBufferGeometry(10,10);
+var material2 = new THREE.MeshBasicMaterial( { color: 0xffffff, map: bufferTexture.depthTexture } );
+var plane = new THREE.Mesh(bufferGeometry,material2);
+
+scene.add(plane);
 
 var prevFrameTime = 0;
 var coreRender = function (time) {
@@ -55,21 +69,15 @@ function render(frameTime, time) {
     cube.rotation.y += 0.001 * frameTime;
     // camera.position.y = cameraDefault.position.y + Math.sin(time / 1000);
     // camera.position.x = cameraDefault.position.y + Math.cos(time / 1000);
-    
-    renderer.render( scene, camera, bufferTexture );
+    plane.rotation.x += 0.01;
+    renderer.render( bufferScene, camera, bufferTexture );
+    renderer.render( scene, camera );
     // renderer.render( scene, camera );
-
-    // if(gl === undefined)
-    //     gl = renderer.getContext();
-    // gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    bufferTexture.texture = bufferTexture.depthTexture;
+    bufferTexture.texture.format = 1023;
     renderer.readRenderTargetPixels(bufferTexture,0 ,0,width,height,pixels);
 
-    // dbCanvasCtx.moveTo(10, 10);
-    // dbCanvasCtx.lineTo(10+1, 10+1);
-    // dbCanvasCtx.stroke();
-    // dbCanvasCtx.moveTo(800, 400);
-    // dbCanvasCtx.lineTo(0, 0);
-    // dbCanvasCtx.stroke();
+    console.log(pixels.filter(function(x){return x!=0}));
     /// Canvas Code
     var counter = 0;
     dbCanvasCtx.clearRect(0, 0, dbCanvasDom.width, dbCanvasDom.height);
@@ -87,5 +95,4 @@ function render(frameTime, time) {
     dbCanvasCtx.stroke();
     /// END Canvas Code
 
-    // renderer.render( scene, camera );
 }
