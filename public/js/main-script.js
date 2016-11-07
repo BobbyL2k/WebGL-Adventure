@@ -10,7 +10,11 @@ var dbCanvasCtx = dbCanvasDom.getContext("2d");
 var pixels = new Uint8Array(width * height * 4);
 var gl;
 renderer.setSize( width, height );
+dbCanvasDom.width = width;
+dbCanvasDom.height = height;
 GLDom.appendChild( renderer.domElement );
+renderer.domElement.style.width = "";
+renderer.domElement.style.height = "";
 
 var geometry = new THREE.SphereGeometry( 1, 10, 10 );
 // var material = new THREE.MeshNormalMaterial();
@@ -73,7 +77,7 @@ function render(frameTime, time) {
     dbCanvasCtx.moveTo(0, 0);
     for(var index=0; index<height*width*4; index+=4){
 //         if(counter++ > 2) break;
-        if(pixels[index] != 0){
+        if(pixels[index] !== 0){
             var corX = (index / 4) % width;
             var corY = (index / (4 * width));
             dbCanvasCtx.lineTo(corX, corY);
@@ -82,6 +86,6 @@ function render(frameTime, time) {
     dbCanvasCtx.closePath();
     dbCanvasCtx.stroke();
     /// END Canvas Code
-    
-//     renderer.render( scene, camera );
+
+    // renderer.render( scene, camera );
 }

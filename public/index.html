@@ -4,12 +4,17 @@
     <title>Basic Three.js App</title>
     <style>
       html, body { margin: 0; padding: 0; overflow: hidden; }
+      #GL > canvas { height: 100%; width: 100%; }
+      canvas#debugCanvas { height: 100%; width: 100%; }
     </style>
   </head>
   <body>
-    <div id="GL" style="width: 300px; height: 300px;"></div>
-    <canvas id="debugCanvas" width=800 height=400 style="width: 800px; height: 400px;"></div>
+    <div id="GL" style="width: 300px; height: 300px; image-rendering: pixelated;"></div>
+    <div id="dbCanvasContainer" style="width: 300px; height: 300px; image-rendering: pixelated;">
+      <canvas id="debugCanvas">
+    </div>
     <script src="js/three.js"></script>
+    <script src="js/camera.js"></script>
     <script src="js/main-script.js"></script>
   </body>
 </html>
