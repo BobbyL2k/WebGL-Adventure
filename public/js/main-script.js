@@ -18,25 +18,6 @@ dbCanvasDom.height = height;
 GLDom.appendChild( renderer.domElement );
 renderer.domElement.style.width = "";
 renderer.domElement.style.height = "";
-
-var geometry = new THREE.SphereGeometry( 1, 10, 10 );
-// var material = new THREE.MeshNormalMaterial();
-var material = new THREE.MeshNormalMaterial({
-    shading: THREE.FlatShading,
-    wireframe: false
-});
-var cube = new THREE.Mesh( geometry, material );
-bufferScene.add( cube );
-camera.position.z = 4;
-
-cameraDefault = {
-    position: {
-        x:0, y:0, z:0
-    }
-};
-
-
-// var bufferScene = new THREE.Scene();
 var bufferTexture = new THREE.WebGLRenderTarget( 
     width, 
     height, 
@@ -50,8 +31,33 @@ bufferTexture.texture.generateMipmaps = false;
 bufferTexture.stencilBuffer = false;
 bufferTexture.depthTexture = new THREE.DepthTexture();
 
+var geometry = new THREE.SphereGeometry( 1, 10, 10 );
+// var material = new THREE.MeshNormalMaterial();
+var material = new THREE.ShaderMaterial({
+          vertexShader: document.querySelector('#post-vert').textContent.trim(),
+          fragmentShader: document.querySelector('#post-frag').textContent.trim(),
+          uniforms: {
+            cameraNear: { value: -5 },
+            cameraFar:  { value: 5 },
+            //tDiffuse:   { value: bufferTexture.texture },
+            tDepth:     { value: bufferTexture.depthTexture }
+          }
+        });
+var cube = new THREE.Mesh( geometry, material );
+bufferScene.add( cube );
+camera.position.z = 4;
+
+cameraDefault = {
+    position: {
+        x:0, y:0, z:0
+    }
+};
+
+
+// var bufferScene = new THREE.Scene();
+
 var bufferGeometry = new THREE.PlaneBufferGeometry(10,10);
-var material2 = new THREE.MeshBasicMaterial( { color: 0xffffff, map: bufferTexture.depthTexture } );
+var material2 = new THREE.MeshBasicMaterial( { color: 0xffffff, map: bufferTexture.texture } );
 var plane = new THREE.Mesh(bufferGeometry,material2);
 
 scene.add(plane);
@@ -69,15 +75,13 @@ function render(frameTime, time) {
     cube.rotation.y += 0.001 * frameTime;
     // camera.position.y = cameraDefault.position.y + Math.sin(time / 1000);
     // camera.position.x = cameraDefault.position.y + Math.cos(time / 1000);
-    plane.rotation.x += 0.01;
+    //plane.rotation.x += 0.01;
     renderer.render( bufferScene, camera, bufferTexture );
     renderer.render( scene, camera );
     // renderer.render( scene, camera );
-    bufferTexture.texture = bufferTexture.depthTexture;
-    bufferTexture.texture.format = 1023;
     renderer.readRenderTargetPixels(bufferTexture,0 ,0,width,height,pixels);
-
-    console.log(pixels.filter(function(x){return x!=0}));
+    //console.log(pixels);
+    console.log(pixels.filter(function(x){return x!=0&&x!=255}));
     /// Canvas Code
     var counter = 0;
     dbCanvasCtx.clearRect(0, 0, dbCanvasDom.width, dbCanvasDom.height);
@@ -96,3 +100,35 @@ function render(frameTime, time) {
     /// END Canvas Code
 
 }
+
+readRenderTargetPixels = function ( renderTarget, x, y, width, height, buffer ) {
+
+    		var framebuffer = properties.get( renderTarget ).__webglFramebuffer;
+
+    		if ( framebuffer ) {
+
+    			var restore = false;
+
+    			if ( framebuffer !== _currentFramebuffer ) {
+
+    				_gl.bindFramebuffer( _gl.FRAMEBUFFER, framebuffer );
+
+    				restore = true;
+
+    			}
+
+    			try {
+    					_gl.readPixels( x, y, width, height, gl.RGB, gl.FLOAT, buffer );
+    			} finally {
+
+    				if ( restore ) {
+
+    					_gl.bindFramebuffer( _gl.FRAMEBUFFER, _currentFramebuffer );
+
+    				}
+
+    			}
+
+    		}
+
+    	};
