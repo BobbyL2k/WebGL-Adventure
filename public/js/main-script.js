@@ -6,7 +6,7 @@ var height = 30;
 var viewportWidth = GLDom.offsetWidth;
 var viewportHeight = GLDom.offsetHeight;
 var aspect = width / height;
-var camera = new THREE.PerspectiveCamera( 75, aspect, 0.1, 1000 );
+var camera = new THREE.OrthographicCamera(-1,1,1,-1,-10,1000);
 var renderer = new THREE.WebGLRenderer();
 var dbCanvasDom = document.getElementById("debugCanvas");
 var dbCanvasCtx = dbCanvasDom.getContext("2d");
@@ -37,24 +37,20 @@ var material = new THREE.ShaderMaterial({
           vertexShader: document.querySelector('#post-vert').textContent.trim(),
           fragmentShader: document.querySelector('#post-frag').textContent.trim(),
           uniforms: {
-            cameraNear: { value: -5 },
-            cameraFar:  { value: 5 },
+            cameraNear: { value: 0 },
+            cameraFar:  { value: 1 },
             //tDiffuse:   { value: bufferTexture.texture },
             tDepth:     { value: bufferTexture.depthTexture }
           }
         });
+
 var cube = new THREE.Mesh( geometry, material );
+//cube.position.y-=1;
 bufferScene.add( cube );
-camera.position.z = 4;
+camera.position.z = 1;
+camera.lookAt(scene.position);
 
-cameraDefault = {
-    position: {
-        x:0, y:0, z:0
-    }
-};
-
-
-// var bufferScene = new THREE.Scene();
+//var bufferScene = new THREE.Scene();
 
 var bufferGeometry = new THREE.PlaneBufferGeometry(10,10);
 var material2 = new THREE.MeshBasicMaterial( { color: 0xffffff, map: bufferTexture.texture } );
@@ -81,7 +77,7 @@ function render(frameTime, time) {
     // renderer.render( scene, camera );
     renderer.readRenderTargetPixels(bufferTexture,0 ,0,width,height,pixels);
     //console.log(pixels);
-    console.log(pixels.filter(function(x){return x!=0&&x!=255}));
+    console.log(pixels.filter(function(x){return x!=0}));
     /// Canvas Code
     var counter = 0;
     dbCanvasCtx.clearRect(0, 0, dbCanvasDom.width, dbCanvasDom.height);
