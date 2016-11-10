@@ -52,7 +52,7 @@ camera.lookAt(scene.position);
 
 //var bufferScene = new THREE.Scene();
 
-var bufferGeometry = new THREE.PlaneBufferGeometry(10,10);
+var bufferGeometry = new THREE.PlaneBufferGeometry(1,1);
 var material2 = new THREE.MeshBasicMaterial( { color: 0xffffff, map: bufferTexture.texture } );
 var plane = new THREE.Mesh(bufferGeometry,material2);
 
