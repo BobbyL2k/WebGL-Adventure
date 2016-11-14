@@ -11,6 +11,7 @@ var renderer = new THREE.WebGLRenderer();
 var dbCanvasDom = document.getElementById("debugCanvas");
 var dbCanvasCtx = dbCanvasDom.getContext("2d");
 var pixels = new Uint8Array(width * height * 4);
+var float_pixels = new Float32Array(width * height * 4);
 var gl;
 renderer.setSize( viewportWidth, viewportHeight );
 dbCanvasDom.width = width;
@@ -25,11 +26,15 @@ var bufferTexture = new THREE.WebGLRenderTarget(
         minFilter: THREE.NearestFilter, 
         magFilter: THREE.NearestFilter, 
         format: THREE.RGBAFormat,
+        type: THREE.FloatType,
     } );
 
 bufferTexture.texture.generateMipmaps = false;
 bufferTexture.stencilBuffer = false;
+bufferTexture.depthBuffer = true;
 bufferTexture.depthTexture = new THREE.DepthTexture();
+bufferTexture.depthTexture.type = THREE.UnsignedShortType;
+
 
 var geometry = new THREE.SphereGeometry( 1, 10, 10 );
 // var material = new THREE.MeshNormalMaterial();
@@ -37,7 +42,7 @@ var material = new THREE.ShaderMaterial({
           vertexShader: document.querySelector('#post-vert').textContent.trim(),
           fragmentShader: document.querySelector('#post-frag').textContent.trim(),
           uniforms: {
-            cameraNear: { value: 0 },
+            cameraNear: { value: -1 },
             cameraFar:  { value: 1 },
             //tDiffuse:   { value: bufferTexture.texture },
             tDepth:     { value: bufferTexture.depthTexture }
@@ -68,16 +73,18 @@ var coreRender = function (time) {
 coreRender(0);
 
 function render(frameTime, time) {
-    cube.rotation.y += 0.001 * frameTime;
+    //cube.rotation.y += 0.001 * frameTime;
     // camera.position.y = cameraDefault.position.y + Math.sin(time / 1000);
     // camera.position.x = cameraDefault.position.y + Math.cos(time / 1000);
     //plane.rotation.x += 0.01;
     renderer.render( bufferScene, camera, bufferTexture );
     renderer.render( scene, camera );
     // renderer.render( scene, camera );
-    renderer.readRenderTargetPixels(bufferTexture,0 ,0,width,height,pixels);
-    //console.log(pixels);
-    console.log(pixels.filter(function(x){return x!=0}));
+    renderer.readRenderTargetPixels(bufferTexture,0 ,0,width,height,float_pixels);
+    //var canvas = document.querySelector('canvas');
+    //renderer.readRenderTargetDepthPixels(canvas.getContext('webgl2'),bufferTexture,0 ,0,width,height,float_pixels);
+    console.log(float_pixels);
+    //console.log(pixels.filter(function(x){return x!=0 && x!=255}));
     /// Canvas Code
     var counter = 0;
     dbCanvasCtx.clearRect(0, 0, dbCanvasDom.width, dbCanvasDom.height);

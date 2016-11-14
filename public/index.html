@@ -16,10 +16,15 @@
     <script id="post-vert" type="x-shader/x-vertex">
       varying vec2 vUv;
       varying vec4 vVector;
+      uniform float cameraNear;
+      uniform float cameraFar;
       void main() {
         vUv = uv;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        vVector = vec4(position, 1.0);
+        vVector = vec4(gl_Position.xyz, 1.0);
+        vVector = vec4(position,1.0);
+        //vVector.z = vVector.z - cameraNear;
+        //vVector.z = vVector.z / cameraFar;
       }
     </script>
     <script id="post-frag" type="x-shader/x-fragment">
@@ -38,8 +43,9 @@
       void main() {
         vec3 diffuse = texture2D(tDiffuse, vUv).rgb;
         float depth = readDepth(tDepth, vUv);
-        gl_FragColor.rgb = vec3(vVector.z);
-        gl_FragColor.a = 1.0 ;
+        //depth = texture2D(tDepth, vUv).x;
+        gl_FragColor.rgb = vec3(vUv.x,vUv.y,depth);
+        gl_FragColor.a = 0.0 ;
       }
     </script>
     <script src="js/three.js"></script>
