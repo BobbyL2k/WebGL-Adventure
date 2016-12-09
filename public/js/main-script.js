@@ -56,13 +56,18 @@ bufferScene.add( cube );
 camera.position.z = 1;
 camera.lookAt(scene.position);
 
+
+for(var i =0; i<cubes.length;i++)
+    cubes[i]=1;
+var aPlane = getObject(cubes);
+scene.add(aPlane);
 //var bufferScene = new THREE.Scene();
 
 var bufferGeometry = new THREE.PlaneBufferGeometry(1,1);
 var material2 = new THREE.MeshBasicMaterial( { color: 0xffffff, map: bufferTexture.texture } );
 var plane = new THREE.Mesh(bufferGeometry,material2);
 
-scene.add(plane);
+//scene.add(plane);
 
 var prevFrameTime = 0;
 var coreRender = function (time) {
@@ -78,12 +83,10 @@ function render(frameTime, time) {
     // camera.position.y = cameraDefault.position.y + Math.sin(time / 1000);
     // camera.position.x = cameraDefault.position.y + Math.cos(time / 1000);
     //plane.rotation.x += 0.01;
-    
-    for(var i =0; i<cubes.length;i++)
-        cubes[i]=1;
-    var s = getScene(cubes);
+    aPlane.rotation.x += 0.1;
+    aPlane.rotation.y += 0.1;
     renderer.render( bufferScene, camera, bufferTexture );
-    renderer.render( s, camera );
+    renderer.render( scene, camera );
     // renderer.render( scene, camera );
     renderer.readRenderTargetPixels(bufferTexture,0 ,0,width,height,float_pixels);
     //var canvas = document.querySelector('canvas');
@@ -109,8 +112,8 @@ function render(frameTime, time) {
 
 }
 
-function getScene(cubes) {
-    var scene = new THREE.Scene();
+function getObject(cubes) {
+    var group = new THREE.Object3D();
     var di = Math.sqrt(cubes.length/4);
 
     var geometry = new THREE.BoxGeometry( 2/di, 2/di, 2/di );
@@ -125,8 +128,8 @@ function getScene(cubes) {
             console.log(corX + " " + corY);
             cube.position.x = corX*2/di-1+1/di;
             cube.position.y = corY*2/di-1+1/di;
-            scene.add(cube);
+            group.add(cube);
         }
     }
-    return scene;
+    return group;
 }
