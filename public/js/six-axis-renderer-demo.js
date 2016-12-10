@@ -1,28 +1,19 @@
 var renderer;
 var renderingArea;
-var camera;
-var mainScene;
 var scene;
-var bufferTexture;
-var float_buffer;
 
 init();
-// startProgramLoop();
+startProgramLoop();
 // code execution is finished
 // bellow are function definition
 
 function init(){
     "use strict";
-    var aoiSize = 100;       // Area of interest size
     renderingArea = {
         center: {
-            x:0, y:0, z:0,
+            x:0, y:0, z:2,
         },
-        size: {
-            x:aoiSize,
-            y:aoiSize,
-            z:aoiSize,
-        },
+        size: 30,
     };
     // Rendering from +-5 x y and z
     // Area of interest is 10*10*10 = 1000 voxels
@@ -35,7 +26,8 @@ function init(){
 
     function setUpGlCanvas(){
         var container = getDomContainer();
-        renderer = getRenderer(getScene());
+        scene = getScene(); // setting global var
+        renderer = getRenderer(scene);
         renderer.addDomTo(container);
         return;
 
@@ -56,7 +48,7 @@ function init(){
     function getScene(){
         var scene = new THREE.Object3D();
         var geometry = new
-            THREE.TeapotBufferGeometry(10);
+            THREE.TeapotBufferGeometry(5);
             // THREE.SphereGeometry( 5, 10, 10 );
             // THREE.BoxBufferGeometry( 4, 4, 4 );
         var material = new THREE.ShaderMaterial({
@@ -70,6 +62,7 @@ function init(){
 }
 
 var prevFrameTime = 0;
+var counter = 0;
 function startProgramLoop(time=0){
     requestAnimationFrame( startProgramLoop );
     renderLoop(time - prevFrameTime, time);
@@ -77,12 +70,14 @@ function startProgramLoop(time=0){
     return;
 
     function renderLoop(frameTime, time){
-        var t = (~~(time / 1000) % 7) - 3;
-        scene.rotation.y = Math.sin(time / 3000);
-        renderingArea.center.x = t;
-        updateOrthoCamera( camera, renderingArea );
-        // renderer.renderAll();
-        // renderer.render( mainScene, camera );
+        counter += frameTime;
+        if(counter > 500){
+            counter = 0;
+            // var t = (~~(time / 1000) % 7) - 3;
+            // scene.rotation.y = Math.sin(time / 3000);
+            // renderingArea.center.x = t;
+            renderer.renderAll();
+        }
     }
 }
 
