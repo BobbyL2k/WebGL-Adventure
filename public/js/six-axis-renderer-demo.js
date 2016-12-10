@@ -7,7 +7,7 @@ var bufferTexture;
 var float_buffer;
 
 init();
-startProgramLoop();
+// startProgramLoop();
 // code execution is finished
 // bellow are function definition
 
@@ -28,49 +28,32 @@ function init(){
     // Area of interest is 10*10*10 = 1000 voxels
 
     setUpGlCanvas(); // renderer is set in setUpGlCanvas
-    var sceneBundle = getScene();
-    mainScene = sceneBundle.mainScene;
-    scene = sceneBundle.scene;
-    camera = getCamera();
-    bufferTexture = new THREE.WebGLRenderTarget(
-        aoiSize,
-        aoiSize,
-        {
-            minFilter: THREE.NearestFilter,
-            magFilter: THREE.NearestFilter,
-            format: THREE.RGBAFormat,
-            type: THREE.FloatType,
-        });
-    float_buffer = new Float32Array(aoiSize * aoiSize * 4);
-    renderer.render( mainScene, camera );
-    renderer.render( mainScene, camera, bufferTexture );
-    renderer.readRenderTargetPixels( bufferTexture, 0, 0, aoiSize, aoiSize, float_buffer);
-    console.log(float_buffer);
+    renderer.renderAll();
+    console.log(renderer.floatBuffer);
 
-    // var renderBuffer = new Uint8Array(aoiSize * aoiSize * 4);
-        // 4 is from WebGL 4 output color channels
     return;
 
     function setUpGlCanvas(){
         var container = getDomContainer();
-        renderer  = getRenderer();
-        container.appendChild( renderer.domElement );
-        // make GL Canvas Scale to Parent
-        renderer.domElement.style.width = "100%";
-        renderer.domElement.style.height = "100%";
-        return renderer;
+        renderer = getRenderer(getScene());
+        renderer.addDomTo(container);
+        return;
 
         function getDomContainer(){
-            return document.getElementById('GL');
+            return [
+                document.getElementById('GL1'),
+                document.getElementById('GL2'),
+                document.getElementById('GL3'),
+                document.getElementById('GL4'),
+                document.getElementById('GL5'),
+                document.getElementById('GL6'),
+            ];
         }
-        function getRenderer(){
-            var renderer = new THREE.WebGLRenderer();
-            renderer.setSize(aoiSize, aoiSize);
-            return renderer;
+        function getRenderer(obj3dScene){
+            return new sxRenderer(obj3dScene, renderingArea);
         }
     }
     function getScene(){
-        var mainScene = new THREE.Scene();
         var scene = new THREE.Object3D();
         var geometry = new
             THREE.TeapotBufferGeometry(10);
@@ -82,13 +65,7 @@ function init(){
         });
         var sphere = new THREE.Mesh( geometry, material );
         scene.add( sphere );
-        mainScene.add( scene );
-        return {mainScene, scene};
-    }
-    function getCamera(){
-        var camera = new THREE.OrthographicCamera();
-        updateOrthoCamera( camera, renderingArea );
-        return camera;
+        return scene;
     }
 }
 
@@ -104,7 +81,8 @@ function startProgramLoop(time=0){
         scene.rotation.y = Math.sin(time / 3000);
         renderingArea.center.x = t;
         updateOrthoCamera( camera, renderingArea );
-        renderer.render( mainScene, camera );
+        // renderer.renderAll();
+        // renderer.render( mainScene, camera );
     }
 }
 
