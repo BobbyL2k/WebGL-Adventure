@@ -51,10 +51,12 @@ var sxRenderer;
             this.renderer.domElement.style.width  = "100%";
             this.renderer.domElement.style.height = "100%";
         }
-        renderAll(){
-            if(this.c === undefined) // For Preview
-                this.c = -1;
-            this.renderPreview(this.c = (this.c+1)%6);
+        renderAll(preview=true){
+            if(preview){
+                if(this.c === undefined) // For Preview
+                    this.c = -1;
+                this.renderPreview(this.c = (this.c+1)%6);
+            }
             for(var c=0; c<angle_count; c++){
                 this.renderAngle(c);
             }
