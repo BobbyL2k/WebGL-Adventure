@@ -20,12 +20,12 @@ dbCanvasDom.height = height;
 GLDom.appendChild( renderer.domElement );
 renderer.domElement.style.width = "";
 renderer.domElement.style.height = "";
-var bufferTexture = new THREE.WebGLRenderTarget( 
-    width, 
-    height, 
-    { 
-        minFilter: THREE.NearestFilter, 
-        magFilter: THREE.NearestFilter, 
+var bufferTexture = new THREE.WebGLRenderTarget(
+    width,
+    height,
+    {
+        minFilter: THREE.NearestFilter,
+        magFilter: THREE.NearestFilter,
         format: THREE.RGBAFormat,
         type: THREE.FloatType,
     } );
