@@ -1,27 +1,36 @@
 /*jshint esversion: 6 */
 
-const angle_count = 6;
-
 var sxRenderer;
 {
+    const angle_count = 6;
+
+    const defaultRenderingArea = {
+        center: {
+            x:0, y:0, z:0,
+        },
+        size: 10
+    };
+
     class cl_sxRenderer{
+        // NOTE Recomputing size of renderingArea happens in
+            // 1 constructor
+            // 2 updateRenderingArea
+            // If any systems uses size please update accordingly
         constructor(Object3D, renderingArea){
-            const defaultRenderingArea = {
-                center: {
-                    x:0, y:0, z:0,
-                },
-                size: 10
-            };
             this._renderingArea = loadDefault(defaultRenderingArea, renderingArea);
+
             this.renderer = new THREE.WebGLRenderer();
             this.renderer.setSize( this._renderingArea.size, this._renderingArea.size );
+
             this.camera = new THREE.OrthographicCamera();
-            updateOrthoCamera(this.camera, this._renderingArea);
+            this.updateOrthoCamera();
+
             this.scene = new THREE.Scene();
             this.PosObject3D = Object3D;
             this.RotObject3D = new THREE.Object3D();
             this.RotObject3D.add(this.PosObject3D);
             this.scene.add(this.RotObject3D);
+
             this.bufferTexture = new THREE.WebGLRenderTarget(
                 this._renderingArea.size,
                 this._renderingArea.size,
@@ -38,41 +47,66 @@ var sxRenderer;
         }
         addDomTo(domContainer){
             this.hasDomContainer = true;
-            domContainer[0].appendChild( this.renderer.domElement );
+            domContainer.appendChild( this.renderer.domElement );
             this.renderer.domElement.style.width  = "100%";
             this.renderer.domElement.style.height = "100%";
         }
         renderAll(){
-            if(this.hasDomContainer){ // For Preview
-                if(this.c === undefined)
-                    this.c = -1;
-                this.c++;
-                setTransformation( this.c%6, this.PosObject3D, this.RotObject3D, this._renderingArea );
-                this.renderer.render( this.scene, this.camera );
-            }
+            if(this.c === undefined) // For Preview
+                this.c = -1;
+            this.renderPreview(this.c = (this.c+1)%6);
             for(var c=0; c<angle_count; c++){
-                setTransformation( c, this.PosObject3D, this.RotObject3D, this._renderingArea );
-                this.renderer.render( this.scene, this.camera, this.bufferTexture );
-                this.renderer.readRenderTargetPixels( this.bufferTexture, 0, 0,
-                    this._renderingArea.size, this._renderingArea.size,
-                    this.floatBuffer[c]);
+                this.renderAngle(c);
+            }
+        }
+        renderAngle(angle){
+            setTransformation( angle, this.PosObject3D, this.RotObject3D, this._renderingArea );
+            this.renderer.render( this.scene, this.camera, this.bufferTexture );
+            this.renderer.readRenderTargetPixels( this.bufferTexture, 0, 0,
+                this._renderingArea.size, this._renderingArea.size,
+                this.floatBuffer[angle]);
+        }
+        renderPreview(angle){
+            if(this.hasDomContainer){ // For Preview
+                setTransformation( angle, this.PosObject3D, this.RotObject3D, this._renderingArea );
+                this.renderer.render( this.scene, this.camera );
             }
         }
         updateRenderingArea(renderingArea){
+            var old_size = this._renderingArea.size;
             this._renderingArea = loadDefault(this._renderingArea, renderingArea);
+            if(this._renderingArea.size != old_size){
+                this.renderer.setSize( this._renderingArea.size, this._renderingArea.size );
+                this.bufferTexture = new THREE.WebGLRenderTarget(
+                    this._renderingArea.size,
+                    this._renderingArea.size,
+                    {
+                        format: THREE.RGBAFormat,
+                        type: THREE.FloatType,
+                    });
+                this.floatBuffer = [];
+                for(var angle=0; angle<angle_count; angle++){
+                    this.floatBuffer.push(new Float32Array(
+                        this._renderingArea.size * this._renderingArea.size * 4
+                        ));
+                }
+                this.updateOrthoCamera();
+            }
+            this.renderer.domElement.style.width  = "100%";
+            this.renderer.domElement.style.height = "100%";
+        }
+        
+        updateOrthoCamera(){
+            this.camera.left   = -this._renderingArea.size/2;
+            this.camera.right  =  this._renderingArea.size/2;
+            this.camera.top    =  this._renderingArea.size/2;
+            this.camera.bottom = -this._renderingArea.size/2;
+            this.camera.near   = -this._renderingArea.size/2;
+            this.camera.far    =  this._renderingArea.size/2;
+            this.camera.updateProjectionMatrix();
         }
     }
     sxRenderer = cl_sxRenderer;
-
-    function updateOrthoCamera(camera, renderingArea){
-        camera.left   = -renderingArea.size/2;
-        camera.right  =  renderingArea.size/2;
-        camera.top    =  renderingArea.size/2;
-        camera.bottom = -renderingArea.size/2;
-        camera.near   = -renderingArea.size/2;
-        camera.far    =  renderingArea.size/2;
-        camera.updateProjectionMatrix();
-    }
 
     function setTransformation(angle, posObj3D, rotObj3D, renderingArea){
         posObj3D.position.x = -renderingArea.center.x;
@@ -114,6 +148,7 @@ var sxRenderer;
     }
 
     function loadDefault(d_obj, obj){
+        if(obj === undefined) return d_obj;
         var result = {};
         for(var key in d_obj){
             if(typeof d_obj[key] !== 'object'){

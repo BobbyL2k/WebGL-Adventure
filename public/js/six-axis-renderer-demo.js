@@ -1,4 +1,5 @@
-var renderer;
+var sxRenderer;
+var sliceRenderer;
 var renderingArea;
 var scene;
 
@@ -19,16 +20,19 @@ function init(){
     // Area of interest is 10*10*10 = 1000 voxels
 
     setUpGlCanvas(); // renderer is set in setUpGlCanvas
-    renderer.renderAll();
-    console.log(renderer.floatBuffer);
+    sxRenderer.renderAll();
+    sliceRenderer.renderAll();
+    console.log(sxRenderer.floatBuffer);
 
     return;
 
     function setUpGlCanvas(){
         var container = getDomContainer();
         scene = getScene(); // setting global var
-        renderer = getRenderer(scene);
-        renderer.addDomTo(container);
+        sxRenderer = new sxRenderer(scene, renderingArea);
+        sxRenderer.addDomTo(container[0]);
+        sliceRenderer = new sliceRenderer(scene.clone(), renderingArea);
+        sliceRenderer.addDomTo(container[1]);
         return;
 
         function getDomContainer(){
@@ -41,9 +45,6 @@ function init(){
                 document.getElementById('GL6'),
             ];
         }
-        function getRenderer(obj3dScene){
-            return new sxRenderer(obj3dScene, renderingArea);
-        }
     }
     function getScene(){
         var scene = new THREE.Object3D();
@@ -52,6 +53,7 @@ function init(){
             // THREE.SphereGeometry( 5, 10, 10 );
             // THREE.BoxBufferGeometry( 4, 4, 4 );
         var material = new THREE.ShaderMaterial({
+            side:THREE.DoubleSide,
             vertexShader: document.querySelector('#post-vert').textContent.trim(),
             fragmentShader: document.querySelector('#post-frag').textContent.trim(),
         });
@@ -63,6 +65,7 @@ function init(){
 
 var prevFrameTime = 0;
 var counter = 0;
+var counter2 = 0;
 function startProgramLoop(time=0){
     requestAnimationFrame( startProgramLoop );
     renderLoop(time - prevFrameTime, time);
@@ -71,22 +74,17 @@ function startProgramLoop(time=0){
 
     function renderLoop(frameTime, time){
         counter += frameTime;
+        counter2 += frameTime;
         if(counter > 500){
             counter = 0;
             // var t = (~~(time / 1000) % 7) - 3;
             // scene.rotation.y = Math.sin(time / 3000);
             // renderingArea.center.x = t;
-            renderer.renderAll();
+            sxRenderer.renderAll();
+        }
+        if(counter2 > 100){
+            counter2 = 0;
+            sliceRenderer.renderAll();
         }
     }
-}
-
-function updateOrthoCamera(camera, renderingArea){
-    camera.left   = renderingArea.center.x - renderingArea.size.x/2;
-    camera.right  = renderingArea.center.x + renderingArea.size.x/2;
-    camera.top    = renderingArea.center.y + renderingArea.size.y/2;
-    camera.bottom = renderingArea.center.y - renderingArea.size.y/2;
-    camera.near   = renderingArea.center.z - renderingArea.size.z/2;
-    camera.far    = renderingArea.center.z + renderingArea.size.z/2;
-    camera.updateProjectionMatrix();
 }
