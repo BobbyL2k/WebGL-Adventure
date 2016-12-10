@@ -18,9 +18,9 @@ class CreateScene{
                 var corX = (index / 4) % di;
                 var corY = Math.floor((index / (4 * di)));
                 console.log(corX + " " + corY);
-                voxel.position.x = corX*2/di-1 + (1/di);
-                voxel.position.y = corY*2/di-1 + (1/di);
-                voxel.position.z = Math.floor(voxels[index])/(di/2) + 1/di;
+                voxel.position.x = (corX*2/di-1 + (1/di));
+                voxel.position.y = -(corY*2/di-1 + (1/di));
+                voxel.position.z = -(Math.round(voxels[index] -1)/(di/2) + 1/di);
                 console.log(voxels[index]);
                 console.log(voxel.position.z);
                 aPlane.add(voxel);
