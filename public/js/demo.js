@@ -35,6 +35,10 @@ var currentVR;
 // Work queue
 var workQueue;
 
+// Material Holder
+var materialsHolder;
+
+
 init();
 startProgramLoop();
 // code execution is finished
@@ -46,11 +50,11 @@ function init(){
         center: {
             x:0, y:0, z:0,
         },
-        size: 25,
+        size: 26,
     };
     // Rendering from +-5 x y and z
     // Area of interest is 10*10*10 = 1000 voxels
-
+    materialsHolder = new MaterialsHolder();
     setUpGlCanvas(); // sxRenderer is set in setUpGlCanvas
     sxRenderer.renderAll();
     console.log(sxRenderer.floatBuffer);
@@ -61,9 +65,8 @@ function init(){
         var container = getDomContainer();
 
         // TODO fix magic numbers
-        mainCamera = new 
-            // THREE.OrthographicCamera(-1,1,-1,1,-10,10);
-            THREE.PerspectiveCamera( 45, 1, 1, 1000 );
+        mainCamera = new THREE.PerspectiveCamera( 45, 1, 1, 1000 );
+        // THREE.OrthographicCamera(-1,1,-1,1,-10,10);
         mainCamera.position.z = 4;
         mainScene = new THREE.Scene();
         voxelSubScene = [new VoxelScene(), new VoxelScene()];
@@ -77,6 +80,34 @@ function init(){
         sxRenderer.addDomTo(container[1]);
         currentVR = 0;
 
+        // Testing Area
+        mainRenderer.shadowMap.enabled = true;
+		mainRenderer.shadowMap.type = THREE.PCFShadowMap;
+
+        var ambient = new THREE.AmbientLight(0x090909);
+        mainScene.add( ambient );
+
+        var directionalLight = new THREE.DirectionalLight( 0xffffff, 2 );
+		// directionalLight.position.set( 2, 1.2, 10 ).normalize();
+		// mainScene.add( directionalLight );
+		directionalLight = new THREE.DirectionalLight( 0xffffff, 2 );
+		directionalLight.position.set( 10, -10, 1 ).normalize();
+        directionalLight.castShadow = true;
+	    directionalLight.shadow = new THREE.LightShadow( new THREE.PerspectiveCamera( 10, -10 ,1 ) );
+	    directionalLight.shadow.bias = 0.0001;
+	    directionalLight.shadow.mapSize.width = 2048;
+	    directionalLight.shadow.mapSize.height = 1024;
+		mainScene.add( directionalLight );
+
+        var groundGeo = new THREE.BoxGeometry(30,0.01,40);
+        var gorundMaterial = new THREE.MeshLambertMaterial({color: 0x00ff00});
+        var groundMesh = new THREE.Mesh(groundGeo,groundMesh);
+        groundMesh.position.y = -1;
+        mainScene.add(groundMesh);
+		//var pointLight = new THREE.PointLight( 0xffaa00, 2 );
+		//pointLight.position.set( 2000, 1200, 10000 );
+		//mainScene.add( pointLight );
+
         workQueue = new WorkQueue();
         return;
 
@@ -84,7 +115,7 @@ function init(){
             return [
                 document.getElementById('GL1'),
                 document.getElementById('GL2'),
-                document.getElementById('GL3'),
+                document.getElementById('GL3'),   
                 document.getElementById('GL4'),
                 document.getElementById('GL5'),
                 document.getElementById('GL6'),
@@ -124,6 +155,8 @@ function startProgramLoop(time=0){
 
     function renderLoop(frameTime, time){
         /// All Program Logic
+        mainCamera.position.x += 0.01;
+        mainCamera.position.y += 0.01;
         programLogic(frameTime);
         // var ProgramLogicTime = performance.now();        /// For performance monitoring
         /// Main Rendering
@@ -183,8 +216,9 @@ function programLogic(frameTime){
     }
 
     var voxelObject3D = voxelSubScene[currentVR].getThreeJsObject3D();
-    sceneRotation.x += 0.01;
+    //sceneRotation.x += 0.01;
     // sceneRotation.y += 0.01;
+    
     voxelObject3D.rotation.x = sceneRotation.x;
     voxelObject3D.rotation.y = sceneRotation.y;
     // Work in queue
@@ -200,7 +234,7 @@ function programLogic(frameTime){
         sxRenderer.renderAngle(angle);
     }
     function projectRenderedVoxelToSS(angle){
-        voxelSubScene[(currentVR+1)%2].addVoxel(sxRenderer.floatBuffer[angle], angle);
+        voxelSubScene[(currentVR+1)%2].addVoxel(sxRenderer.floatBuffer[angle], angle, materialsHolder);
     }
     function replaceOldVoxelSubScene(){
         mainScene.remove(voxelSubScene[currentVR].getThreeJsObject3D());
