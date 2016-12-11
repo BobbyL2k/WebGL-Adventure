@@ -1,6 +1,6 @@
 /*jshint esversion: 6 */
 
-var sxRenderer;
+var SxRenderer;
 {
     const angle_count = 6;
 
@@ -11,7 +11,7 @@ var sxRenderer;
         size: 10
     };
 
-    class cl_sxRenderer{
+    class cl_SxRenderer{
         // NOTE Recomputing size of renderingArea happens in
             // 1 constructor
             // 2 updateRenderingArea
@@ -108,7 +108,7 @@ var sxRenderer;
             this.camera.updateProjectionMatrix();
         }
     }
-    sxRenderer = cl_sxRenderer;
+    SxRenderer = cl_SxRenderer;
 
     function setTransformation(angle, posObj3D, rotObj3D, renderingArea){
         posObj3D.position.x = -renderingArea.center.x;

@@ -1,6 +1,6 @@
 /*jshint esversion: 6 */
 
-var sliceRenderer;
+var SliceRenderer;
 {
 
     const defaultRenderingArea = {
@@ -12,7 +12,7 @@ var sliceRenderer;
         },
     };
 
-    class cl_sliceRenderer{
+    class cl_SliceRenderer{
         constructor(Object3D, renderingArea){
             this._renderingArea = loadDefault(defaultRenderingArea, renderingArea);
 
@@ -110,7 +110,7 @@ var sliceRenderer;
             this.camera.updateProjectionMatrix();
         }
     }
-    sliceRenderer = cl_sliceRenderer;
+    SliceRenderer = cl_SliceRenderer;
 
     function loadDefault(d_obj, obj){
         if(obj === undefined) return d_obj;
