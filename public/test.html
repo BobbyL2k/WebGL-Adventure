@@ -16,37 +16,20 @@
     <script src="js/three.js"></script>
     <script src="js/TeapotBufferGeometry.js"></script>
     <script id="post-vert" type="x-shader/x-vertex">
-      varying vec2 vUv;
-      varying vec4 vVector;
-      uniform float cameraNear;
-      uniform float cameraFar;
+      varying float vDepthValue;
       void main() {
-        vUv = uv;
         vec4 pre_projection_position = modelViewMatrix * vec4(position, 1.0);
         gl_Position = projectionMatrix * pre_projection_position;
-        vVector = pre_projection_position;
-        // vVector = vec4(pre_projection_position,1.0);
+        vDepthValue = pre_projection_position.z;
       }
     </script>
     <script id="post-frag" type="x-shader/x-fragment">
       #include <packing>
-      varying vec2 vUv;
-      varying vec4 vVector;
-      uniform sampler2D tDiffuse;
-      uniform sampler2D tDepth;
-      uniform float cameraNear;
-      uniform float cameraFar;
-      float readDepth (sampler2D depthSampler, vec2 coord) {
-        float fragCoordZ = texture2D(depthSampler, coord).x;
-        float viewZ = perspectiveDepthToViewZ( fragCoordZ, cameraNear, cameraFar );
-        return viewZToOrthographicDepth( viewZ, cameraNear, cameraFar );
-      }
+      varying float vDepthValue;
       void main() {
-        gl_FragColor = vec4(0.0);
-        gl_FragColor.r = vVector.z;
-        gl_FragColor.g = 1.0;
-        // gl_FragColor.rgb = vec3(vUv.x,vUv.y,depth);
-        // gl_FragColor.a = 0.0 ;
+        gl_FragColor.r = 1.0;
+        gl_FragColor.g = 0.0;
+        gl_FragColor.b = vDepthValue;
       }
     </script>
     <script src="js/SxRenderer.js"></script>

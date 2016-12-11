@@ -139,7 +139,7 @@ function startProgramLoop(time=0){
             voxelObject3D.rotation.y = sceneRotation.y;
             mainRenderer.render( mainScene, mainCamera );
 
-            if(workDone>0) console.log('work Done', workDone);
+            // if(workDone>0) console.log('work Done', workDone);
             // if(workQueue.length>0) console.log('work Queue', workQueue.length);
             workDone = 0;
         // }

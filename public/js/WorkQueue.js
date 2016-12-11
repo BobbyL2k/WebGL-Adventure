@@ -1,3 +1,5 @@
+/* jshint esversion:6 */
+
 class WorkQueue{
     constructor(){
         this._queue = [];
@@ -6,11 +8,9 @@ class WorkQueue{
         this._queue.push([workFunc, parameters]);
     }
     execute(){
-        var temp = this._queue.shift();
-        var workFunc = temp[0];
-        var parameters = temp[1];
-        workFunc.apply(null, parameters);
-        return temp;
+        var work = this._queue.shift();
+        work[0].apply(null, work[1]);
+        return work;
     }
     get length(){
         return this._queue.length;
