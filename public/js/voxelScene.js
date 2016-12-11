@@ -14,10 +14,6 @@ var VoxelScene;
             object.material.dispose();
             // console.log(object, 'has material');
         }
-        if(object instanceof THREE.Mesh){
-            // console.log(object);
-            // object.dispose();
-        }
     }
 
     class cl_VoxelScene{
@@ -52,7 +48,7 @@ var VoxelScene;
             var aPlane = new THREE.Object3D();
             var geometry = new THREE.BoxGeometry( 2/di, 2/di, 2/di );
             for(var index=0; index<voxels.length; index+=4){
-                if(voxels[index] != 0){
+                if(voxels[index] !== 0){
                     var color = Math.floor(Math.random()*255*255*255);
                     var material = new THREE.MeshBasicMaterial( {color: color} );
                     var voxel = new THREE.Mesh( geometry, material );

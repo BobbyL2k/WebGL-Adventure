@@ -1,13 +1,14 @@
 /* jshint esversion:6 */
 
-const TARGET_FPS = 60;
-const TARGET_FRAME_TIME = 1000/60;
+const TARGET_REFRESH_RATE = 60;
+const TARGET_FRAME_TIME = 1000 / TARGET_REFRESH_RATE;
 
 const RASTER_REFRESH_RATE = 12;
 const RASTER_FRAMETIME_LIMIT = 1000 / RASTER_REFRESH_RATE;
 
 const EXPECT_DELTA = 4;                     // Expect work to take about 2ms
 const SPARE_COMPUTE_TIME = TARGET_FRAME_TIME - EXPECT_DELTA;
+const WORKQUEUE_OVERFLOW_SIZE = 16;
 
 // Load balancer
 var max_delta = 0;
@@ -60,8 +61,10 @@ function init(){
         var container = getDomContainer();
 
         // TODO fix magic numbers
-        mainCamera = new THREE.OrthographicCamera(-1,1,-1,1,-10,10);
-        mainCamera.position.z = 1;
+        mainCamera = new 
+            // THREE.OrthographicCamera(-1,1,-1,1,-10,10);
+            THREE.PerspectiveCamera( 45, 1, 1, 1000 );
+        mainCamera.position.z = 4;
         mainScene = new THREE.Scene();
         voxelSubScene = [new VoxelScene(), new VoxelScene()];
         mainRenderer = getMainRenderer();
@@ -99,6 +102,9 @@ function init(){
             });
             var sphere = new THREE.Mesh( geometry, material );
             scene.add( sphere );
+            var light = new THREE.PointLight( 0xff0000, 1, 100 );
+            light.position.set( 10, 10, 10 );
+            scene.add( light );
             return scene;
         }
         function getMainRenderer(){
@@ -131,7 +137,7 @@ function startProgramLoop(time=0){
         // WorkQueue execution
         var timeBefore = performance.now();
         var timeLeft = SPARE_COMPUTE_TIME - (timeBefore - time);
-        while(workQueue.length > 9 || timeLeft > 0){
+        while(workQueue.length > WORKQUEUE_OVERFLOW_SIZE || timeLeft > 0){
             if(workQueue.length > 0){
                 var work = workQueue.execute();
                 var delta = performance.now() - timeBefore;
@@ -165,23 +171,28 @@ function programLogic(frameTime){
     if(raster_time_counter > RASTER_FRAMETIME_LIMIT){ // time to preform rasterization
         raster_time_counter = 0;
         // Add work to workQueue
+        workQueue.add(lowPriorityGameLogic);
         workQueue.add(removeOldVoxelSubScene);
         for(let c=0; c<6; c++){
             workQueue.add(renderSixAxis, [c]);
-        }
-        for(let c=0; c<6; c++){
             workQueue.add(projectRenderedVoxelToSS, [c]);
         }
+        // for(let c=0; c<6; c++){
+        // }
         workQueue.add(replaceOldVoxelSubScene);
     }
 
     var voxelObject3D = voxelSubScene[currentVR].getThreeJsObject3D();
     sceneRotation.x += 0.01;
-    sceneRotation.y += 0.01;
+    // sceneRotation.y += 0.01;
     voxelObject3D.rotation.x = sceneRotation.x;
     voxelObject3D.rotation.y = sceneRotation.y;
     // Work in queue
 
+    function lowPriorityGameLogic(){
+        scene.rotation.y += Math.PI/96;
+        sxRenderer.renderPreview();
+    }
     function removeOldVoxelSubScene(){
         voxelSubScene[(currentVR+1)%2].clear();
     }

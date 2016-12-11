@@ -68,7 +68,7 @@ var SxRenderer;
                 this._renderingArea.size, this._renderingArea.size,
                 this.floatBuffer[angle]);
         }
-        renderPreview(angle){
+        renderPreview(angle=0){
             if(this.hasDomContainer){ // For Preview
                 setTransformation( angle, this.PosObject3D, this.RotObject3D, this._renderingArea );
                 this.renderer.render( this.scene, this.camera );
