@@ -1,10 +1,21 @@
 /* jshint esversion:6 */
 
-const TARGET_FRAMERATE = 60;
-const FRAMETIME_LIMIT = 1000 / TARGET_FRAMERATE;
+const TARGET_FPS = 60;
+const TARGET_FRAME_TIME = 1000/60;
+
+const VOXEL_REFRESH_RATE = 12;
+const V_FRAMETIME_LIMIT = 1000 / VOXEL_REFRESH_RATE;
+
+const EXPECT_DELTA = 2;                     // Expect work to take about 2ms
+const SPARE_COMPUTE_TIME = TARGET_FRAME_TIME - EXPECT_DELTA;
 
 // Load balancer
 var max_delta = 0;
+// var workDone = 0;
+
+// Program Loop
+var prevFrameTime = 0;
+var counter = 0;
 
 // Game Logic
 var sceneRotation = {x:0, y:0, z:0};
@@ -98,17 +109,6 @@ function init(){
     }
 }
 
-var prevFrameTime = 0;
-var counter = 0;
-var counter2 = 0;
-var workDone = 0;
-
-// setTimeout(infLol);
-// function infLol(){
-//     console.log("lol");
-//     setTimeout(infLol);
-// }
-
 function startProgramLoop(time=0){
     requestAnimationFrame( startProgramLoop );
     renderLoop(time - prevFrameTime, time);
@@ -116,9 +116,10 @@ function startProgramLoop(time=0){
     return;
 
     function renderLoop(frameTime, time){
+
         counter += frameTime;
-        counter2 += frameTime;
-        if(counter > 500){ // update Voxel 2 FPS (every 500 milisec)
+
+        if(counter > V_FRAMETIME_LIMIT){ // update Voxel 12 FPS (every 83 milisec)
             counter = 0;
             // Add work to workQueue
             workQueue.add(removeOldVoxelSubScene);
@@ -130,31 +131,44 @@ function startProgramLoop(time=0){
             }
             workQueue.add(replaceOldVoxelSubScene);
         }
-        // if(counter2 > FRAMETIME_LIMIT){
-        //     counter2 = 0;
-            var voxelObject3D = voxelSubScene[currentVR].getThreeJsObject3D();
-            sceneRotation.x += 0.01;
-            sceneRotation.y += 0.01;
-            voxelObject3D.rotation.x = sceneRotation.x;
-            voxelObject3D.rotation.y = sceneRotation.y;
-            mainRenderer.render( mainScene, mainCamera );
 
-            // if(workDone>0) console.log('work Done', workDone);
-            // if(workQueue.length>0) console.log('work Queue', workQueue.length);
-            workDone = 0;
-        // }
-        do{
+        var voxelObject3D = voxelSubScene[currentVR].getThreeJsObject3D();
+        sceneRotation.x += 0.01;
+        sceneRotation.y += 0.01;
+        voxelObject3D.rotation.x = sceneRotation.x;
+        voxelObject3D.rotation.y = sceneRotation.y;
+        // var ProgramLogicTime = performance.now();        /// For performance monitoring
+        mainRenderer.render( mainScene, mainCamera );
+        // var RenderTime = performance.now();              /// For performance monitoring
+
+        // if(workDone>0) console.log('work Done', workDone);
+        // if(workQueue.length>0) console.log('work Queue', workQueue.length);
+       
+        var timeLeft = SPARE_COMPUTE_TIME - (performance.now() - time);
+        // workDone = 0;
+        while(workQueue.length > 9 || timeLeft > 0){
             var timeBefore = performance.now();
             if(workQueue.length > 0){
                 var work = workQueue.execute();
-                var delta = performance.now() - timeBefore;
-                if(delta > max_delta){
-                    max_delta = delta;
-                    console.log("NEW MAX Delta", delta, work);
-                }
-                workDone++;
+                // var delta = performance.now() - timeBefore;
+                // if(delta > max_delta){
+                //     max_delta = delta;
+                //     console.log("Delta", delta, work);
+                // }else{
+                //     max_delta -= 0.001;
+                // }
+                // workDone++;                              /// Work Delta monitoring
             }
-        }while(workQueue.length > 9);
+            timeLeft = SPARE_COMPUTE_TIME - (performance.now() - time);
+        }
+        // var SpareComputeTime = performance.now();        /// For performance monitoring
+        // console.log(
+        //     "T",
+        //     ProgramLogicTime - time,
+        //     RenderTime - time,
+        //     SpareComputeTime - RenderTime,
+        //     "Total",
+        //     SpareComputeTime-time);                      /// For performance monitoring
     }
 
     // Work in queue
