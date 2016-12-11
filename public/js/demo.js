@@ -3,10 +3,10 @@
 const TARGET_FPS = 60;
 const TARGET_FRAME_TIME = 1000/60;
 
-const VOXEL_REFRESH_RATE = 12;
-const V_FRAMETIME_LIMIT = 1000 / VOXEL_REFRESH_RATE;
+const RASTER_REFRESH_RATE = 12;
+const RASTER_FRAMETIME_LIMIT = 1000 / RASTER_REFRESH_RATE;
 
-const EXPECT_DELTA = 2;                     // Expect work to take about 2ms
+const EXPECT_DELTA = 4;                     // Expect work to take about 2ms
 const SPARE_COMPUTE_TIME = TARGET_FRAME_TIME - EXPECT_DELTA;
 
 // Load balancer
@@ -15,16 +15,17 @@ var max_delta = 0;
 
 // Program Loop
 var prevFrameTime = 0;
-var counter = 0;
 
-// Game Logic
+// Program Logic
 var sceneRotation = {x:0, y:0, z:0};
+var raster_time_counter = 0;
 
 // Rasterization Renderer
 var renderingArea;
 var scene;
 var sxRenderer;
-// Voxel Renderer
+
+// Voxel Renderer (Main Rendering)
 var voxelSubScene;
 var mainScene;
 var mainCamera;
@@ -116,52 +117,38 @@ function startProgramLoop(time=0){
     return;
 
     function renderLoop(frameTime, time){
-
-        counter += frameTime;
-
-        if(counter > V_FRAMETIME_LIMIT){ // update Voxel 12 FPS (every 83 milisec)
-            counter = 0;
-            // Add work to workQueue
-            workQueue.add(removeOldVoxelSubScene);
-            for(let c=0; c<6; c++){
-                workQueue.add(renderSixAxis, [c]);
-            }
-            for(let c=0; c<6; c++){
-                workQueue.add(projectRenderedVoxelToSS, [c]);
-            }
-            workQueue.add(replaceOldVoxelSubScene);
-        }
-
-        var voxelObject3D = voxelSubScene[currentVR].getThreeJsObject3D();
-        sceneRotation.x += 0.01;
-        sceneRotation.y += 0.01;
-        voxelObject3D.rotation.x = sceneRotation.x;
-        voxelObject3D.rotation.y = sceneRotation.y;
+        /// All Program Logic
+        programLogic(frameTime);
         // var ProgramLogicTime = performance.now();        /// For performance monitoring
+        /// Main Rendering
         mainRenderer.render( mainScene, mainCamera );
         // var RenderTime = performance.now();              /// For performance monitoring
 
         // if(workDone>0) console.log('work Done', workDone);
         // if(workQueue.length>0) console.log('work Queue', workQueue.length);
+        // workDone = 0;                                    /// For WorkQueue monitoring
        
-        var timeLeft = SPARE_COMPUTE_TIME - (performance.now() - time);
-        // workDone = 0;
+        // WorkQueue execution
+        var timeBefore = performance.now();
+        var timeLeft = SPARE_COMPUTE_TIME - (timeBefore - time);
         while(workQueue.length > 9 || timeLeft > 0){
-            var timeBefore = performance.now();
             if(workQueue.length > 0){
                 var work = workQueue.execute();
-                // var delta = performance.now() - timeBefore;
+                var delta = performance.now() - timeBefore;
+                if(delta > timeLeft+EXPECT_DELTA && delta > EXPECT_DELTA)
+                    console.log("WorkQueue cause stutter", delta, work);
                 // if(delta > max_delta){
                 //     max_delta = delta;
                 //     console.log("Delta", delta, work);
                 // }else{
                 //     max_delta -= 0.001;
                 // }
-                // workDone++;                              /// Work Delta monitoring
+                // workDone++;                              /// For WorkQueue monitoring
             }
-            timeLeft = SPARE_COMPUTE_TIME - (performance.now() - time);
+            timeBefore = performance.now();
+            timeLeft = SPARE_COMPUTE_TIME - (timeBefore - time);
         }
-        // var SpareComputeTime = performance.now();        /// For performance monitoring
+        // var SpareComputeTime = performance.now();
         // console.log(
         //     "T",
         //     ProgramLogicTime - time,
@@ -170,8 +157,31 @@ function startProgramLoop(time=0){
         //     "Total",
         //     SpareComputeTime-time);                      /// For performance monitoring
     }
+}
 
+function programLogic(frameTime){
+    raster_time_counter += frameTime;
+
+    if(raster_time_counter > RASTER_FRAMETIME_LIMIT){ // time to preform rasterization
+        raster_time_counter = 0;
+        // Add work to workQueue
+        workQueue.add(removeOldVoxelSubScene);
+        for(let c=0; c<6; c++){
+            workQueue.add(renderSixAxis, [c]);
+        }
+        for(let c=0; c<6; c++){
+            workQueue.add(projectRenderedVoxelToSS, [c]);
+        }
+        workQueue.add(replaceOldVoxelSubScene);
+    }
+
+    var voxelObject3D = voxelSubScene[currentVR].getThreeJsObject3D();
+    sceneRotation.x += 0.01;
+    sceneRotation.y += 0.01;
+    voxelObject3D.rotation.x = sceneRotation.x;
+    voxelObject3D.rotation.y = sceneRotation.y;
     // Work in queue
+
     function removeOldVoxelSubScene(){
         voxelSubScene[(currentVR+1)%2].clear();
     }
