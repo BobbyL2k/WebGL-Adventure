@@ -34,26 +34,27 @@ var VoxelScene;
         getThreeJsObject3D(){
             return this.scene;
         }
-        addSliceVoxelGroup(voxelGroup){
+        addSliceVoxelGroup(voxelGroup, materialsHolder){
             for(var c=0; c<voxelGroup.length; c++){
-                this.addVoxel(voxelGroup[c], 0);
+                this.addVoxel(voxelGroup[c], 0, materialsHolder);
             }
         }
-        addSXVoxelGroup(voxelGroup){
+        addSXVoxelGroup(voxelGroup, materialsHolder){
             var length = Math.min(6, voxelGroup.length);
             for(var c=0; c<length; c++){
-                this.addVoxel(voxelGroup[c], c);
+                this.addVoxel(voxelGroup[c], c, materialsHolder);
             }
         }
-        addVoxel(voxels, direction){
+        addVoxel(voxels, direction, materialsHolder){
             // Add voxels to object
             var di = Math.sqrt(voxels.length/4);
             var aPlane = new THREE.Object3D();
             var geometry = new THREE.BoxGeometry( 2/di, 2/di, 2/di );
             for(var index=0; index<voxels.length; index+=4){
                 if(voxels[index] !== 0){
-                    var material = MAT;
-                    var voxel = new THREE.Mesh( geometry, material );
+                    var color = Math.floor(Math.random()*255*255*255);
+                    //var material = new THREE.MeshBasicMaterial( {color: color} );
+                    var voxel = new THREE.Mesh( geometry, materialsHolder.getMaterial(voxels[index]));
                     var corX = (index / 4) % di;
                     var corY = Math.floor((index / (4 * di)));
                     voxel.position.x = (corX*2/di-1 + (1/di));

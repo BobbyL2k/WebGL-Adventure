@@ -5,7 +5,7 @@ var VoxelSceneManager;
     class cl_VoxelSceneManager{
         constructor(){
             this.voxelSceneArray = [];
-            this.scene = new THREE.Scene();
+            this.scene = new THREE.Object3D();
         }
         clear(){
             for(var c=0; c<this.voxelSceneArray.length; c++){
@@ -19,17 +19,17 @@ var VoxelSceneManager;
             this.ensureCapacity(objIndex);
             return this.voxelSceneArray[objIndex].scene;
         }
-        addSliceVoxelGroup(objIndex, voxelGroup){
+        addSliceVoxelGroup(objIndex, voxelGroup, materialsHolder){
             this.ensureCapacity(objIndex);
-            this.voxelSceneArray[objIndex].addSXVoxelGroup(voxelGroup);
+            this.voxelSceneArray[objIndex].addSXVoxelGroup(voxelGroup, materialsHolder);
         }
-        addSXVoxelGroup(objIndex, voxelGroup){
+        addSXVoxelGroup(objIndex, voxelGroup, materialsHolder){
             this.ensureCapacity(objIndex);
-            this.voxelSceneArray[objIndex].addSXVoxelGroup(voxelGroup);
+            this.voxelSceneArray[objIndex].addSXVoxelGroup(voxelGroup, materialsHolder);
         }
-        addVoxel(objIndex, voxels, direction){
+        addVoxel(objIndex, voxels, direction, materialsHolder){
             this.ensureCapacity(objIndex);
-            this.voxelSceneArray[objIndex].addVoxel(voxels, direction);
+            this.voxelSceneArray[objIndex].addVoxel(voxels, direction, materialsHolder);
         }
         ensureCapacity(index){
             while( this.voxelSceneArray.length <= index ){
