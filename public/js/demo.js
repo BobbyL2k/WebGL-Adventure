@@ -3,7 +3,7 @@
 const TARGET_REFRESH_RATE = 60;
 const TARGET_FRAME_TIME = 1000 / TARGET_REFRESH_RATE;
 
-const RASTER_REFRESH_RATE = 48;
+const RASTER_REFRESH_RATE = 12;
 const RASTER_FRAMETIME_LIMIT = 1000 / RASTER_REFRESH_RATE;
 
 const EXPECT_DELTA = 4;                     // Expect work to take about 2ms
@@ -36,7 +36,8 @@ var workQueue;
 
 // Material Holder
 var materialsHolder;
-
+// testing
+var groundMesh;
 
 init();
 startProgramLoop();
@@ -49,7 +50,7 @@ function init(){
         center: {
             x:0, y:0, z:0,
         },
-        size: 30,
+        size: 31,
     };
     // Rendering from +-5 x y and z
     // Area of interest is 10*10*10 = 1000 voxels
@@ -63,8 +64,9 @@ function init(){
 
         // TODO fix magic numbers
         mainCamera = new THREE.PerspectiveCamera( 45, 1, 1, 1000 );
-        // THREE.OrthographicCamera(-1,1,-1,1,-10,10);
-        mainCamera.position.z = 8;
+        // // // // // // mainCamera = new THREE.OrthographicCamera(-125,125,-125,125,-125,125);
+        mainCamera.position.z = 50;
+        mainCamera.lookAt({x:0,y:0,z:0});
         mainScene = new THREE.Scene();                  /// This is a placeholder scene for first frame rendering
                                                         /// It will be replace by one of dynamicVoxelScene
         dynamicVoxelScene = [new THREE.Object3D(), new THREE.Object3D()];
@@ -92,7 +94,7 @@ function init(){
 		// directionalLight.position.set( 2, 1.2, 10 ).normalize();
 		// mainScene.add( directionalLight );
 		directionalLight = new THREE.DirectionalLight( 0xffffff, 2 );
-		directionalLight.position.set( 10, -10, 1 ).normalize();
+		directionalLight.position.set( 10, -10, 10 ).normalize();
         directionalLight.castShadow = true;
 	    directionalLight.shadow = new THREE.LightShadow( new THREE.PerspectiveCamera( 10, -10 ,1 ) );
 	    directionalLight.shadow.bias = 0.0001;
@@ -102,9 +104,10 @@ function init(){
 
         var groundGeo = new THREE.BoxGeometry(30,0.01,40);
         var gorundMaterial = new THREE.MeshLambertMaterial({color: 0x00ff00});
-        var groundMesh = new THREE.Mesh(groundGeo,groundMesh);
+        groundMesh = new THREE.Mesh(groundGeo,groundMesh);
         groundMesh.position.y = -1;
-        // mainScene.add(groundMesh);
+        mainScene.add(groundMesh);
+        mainScene.scale.set(1,-1,1);
 		//var pointLight = new THREE.PointLight( 0xffaa00, 2 );
 		//pointLight.position.set( 2000, 1200, 10000 );
 		//mainScene.add( pointLight );
@@ -126,6 +129,7 @@ function init(){
             var dynamicScene = [];
             var teapotSize = 6;
             var geometry = new THREE.TeapotBufferGeometry(teapotSize);
+            //var geometry = new THREE.TeapotBufferGeometry(teapotSize,teapotSize,teapotSize,);
             var material = new THREE.ShaderMaterial({
                 vertexShader: document.querySelector('#post-vert').textContent.trim(),
                 fragmentShader: document.querySelector('#post-frag').textContent.trim(),
@@ -137,7 +141,7 @@ function init(){
                     new THREE.BoxBufferGeometry( 8, 8, 8 ), 
                     material ), 
                 {size:12} );
-            dynamicScene.push(dynamicObject);
+            //dynamicScene.push(dynamicObject);
             return dynamicScene;
         }
         function getMainRenderer(){
@@ -210,11 +214,12 @@ function programLogic(frameTime, time){
 
     // mainCamera.position.y = 1*Math.sin(time/1000);
     // mainCamera.position.x = 1*Math.cos(time/1000);
-    dynamicObjectArray[0].position.x = 2*Math.sin(time/1000);
-    dynamicObjectArray[0].position.y = 2*Math.cos(time/1000);
-    dynamicObjectArray[1].rotation.x = time/500;
+    // dynamicObjectArray[0].position.x = 2*Math.sin(time/10000);
+    // dynamicObjectArray[0].position.y = time%100;
+    // groundMesh.position.y = (time+10)%100;
     // dynamicObjectArray[1].rotation.z = time/500;
-    mainCamera.lookAt(dynamicObjectArray[0].position);
+    // dynamicObjectArray[1].rotation.z = time/500;
+    // mainCamera.lookAt(dynamicObjectArray[0].position);
 
     if(raster_time_counter > RASTER_FRAMETIME_LIMIT){ // time to preform rasterization
         raster_time_counter = 0;
@@ -235,8 +240,8 @@ function programLogic(frameTime, time){
 
     function lowPriorityGameLogic(){
         dynamicObjectArray.forEach(function(dynamicObject){
-            dynamicObject.sampleObjectState();
-            dynamicObject.sxRenderer.renderPreview();
+            dynamicObject.sampleObjectState();        
+            dynamicObject.sxRenderer.renderPreview(Math.floor(performance.now()/1000)%6);
         });
     }
     function removeOldVoxelSubScene(objIndex){

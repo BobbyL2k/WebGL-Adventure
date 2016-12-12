@@ -46,30 +46,44 @@ var VoxelScene;
             }
         }
         addVoxel(voxels, direction, materialsHolder){
+            var ignore = [ 5,4];
+            if(ignore.indexOf(direction) != -1){
+                return;
+            }
             // Add voxels to object
             var di = Math.sqrt(voxels.length/4);
             var aPlane = new THREE.Object3D();
-            var geometry = new THREE.BoxGeometry( 2/di, 2/di, 2/di );
+            var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+            var material = new THREE.MeshBasicMaterial( {color: 0xffffff} );
             for(var index=0; index<voxels.length; index+=4){
                 if(voxels[index] !== 0){
                     var color = Math.floor(Math.random()*255*255*255);
-                    //var material = new THREE.MeshBasicMaterial( {color: color} );
-                    var voxel = new THREE.Mesh( geometry, materialsHolder.getMaterial(voxels[index]));
-                    var corX = (index / 4) % di;
-                    var corY = Math.floor((index / (4 * di)));
-                    voxel.position.x = (corX*2/di-1 + (1/di));
-                    voxel.position.y = -(corY*2/di-1 + (1/di));
-                    voxel.position.z = -(Math.round(voxels[index+2] -1)/(di/2) + 1/di);
+                    if(direction == 4)
+                        material = new THREE.MeshBasicMaterial( {color: 0xff0000} );
+                    // var voxel = new THREE.Mesh( geometry, materialsHolder.getMaterial(voxels[index]));
+                    var voxel = new THREE.Mesh( geometry, material);
+                    // var corX = (index / 4) % di;
+                    // var corY = Math.floor((index / (4 * di)));
+                    // var corZ = -(Math.round(voxels[index+2] -1));
+                    var pixelX = (index / 4) % di;
+                    var pixelY = Math.floor((index / (4 * di)));
+                    // var corX = (Math.random() > 0.5?di/2:-di/2);
+                    var corX = pixelX - di/2 + 0.5;
+                    var corY = -(pixelY - di/2 + 0.5);
+                    var corZ = Math.floor(voxels[index+2]) - 0.5; 
+                    voxel.position.x = corX;
+                    voxel.position.y = corY;
+                    voxel.position.z = corZ;
                     aPlane.add(voxel);
                 }
             }
-            //rotate object
+            // rotate object
             if(direction < 4){
-                aPlane.rotation.y = (Math.PI/2) * direction;
+                aPlane.rotation.y = -(Math.PI/2) * direction;
             }else if(direction == 4){
-                aPlane.rotation.x = -Math.PI/2;
-            }else{
                 aPlane.rotation.x = Math.PI/2;
+            }else{
+                aPlane.rotation.x = -Math.PI/2;
             }
             //add object
             this.scene.add(aPlane);
