@@ -1,5 +1,7 @@
 /* jshint esversion:6 */
 
+/// UNUSED
+
 var VoxelSceneManager;
 {
     class cl_VoxelSceneManager{

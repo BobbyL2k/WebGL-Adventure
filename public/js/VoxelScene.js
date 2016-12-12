@@ -11,7 +11,7 @@ var VoxelScene;
             // console.log(object, 'has geometry');
         }
         if(object.material){
-            // object.material.dispose();
+            object.material.dispose();
             // console.log(object, 'has material');
         }
     }
