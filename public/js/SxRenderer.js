@@ -26,7 +26,8 @@ var SxRenderer;
             this.updateOrthoCamera();
 
             this.scene = new THREE.Scene();
-            this.PosObject3D = Object3D;
+            this.PosObject3D = new THREE.Object3D();
+            this.PosObject3D.add(Object3D);
             this.RotObject3D = new THREE.Object3D();
             this.RotObject3D.add(this.PosObject3D);
             this.scene.add(this.RotObject3D);
@@ -44,6 +45,9 @@ var SxRenderer;
                     this._renderingArea.size * this._renderingArea.size * 4
                     ));
             }
+        }
+        getPosition(){
+            return this._renderingArea.center;
         }
         addDomTo(domContainer){
             this.hasDomContainer = true;

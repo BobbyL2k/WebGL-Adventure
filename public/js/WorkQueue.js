@@ -3,6 +3,7 @@
 class WorkQueue{
     constructor(){
         this._queue = [];
+        this.setCounter = 0;
     }
     add(workFunc, parameters=[]){
         this._queue.push([workFunc, parameters]);
@@ -14,5 +15,14 @@ class WorkQueue{
     }
     get length(){
         return this._queue.length;
+    }
+    isOverflow(){
+        return this.setCounter > 1;
+    }
+    setComplete(){
+        self.setCounter++;
+        this.add(function(self){
+            self.setCounter--;
+        }, [this]);
     }
 }

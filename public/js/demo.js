@@ -8,7 +8,6 @@ const RASTER_FRAMETIME_LIMIT = 1000 / RASTER_REFRESH_RATE;
 
 const EXPECT_DELTA = 4;                     // Expect work to take about 2ms
 const SPARE_COMPUTE_TIME = TARGET_FRAME_TIME - EXPECT_DELTA;
-const WORKQUEUE_OVERFLOW_SIZE = 16;
 
 // Load balancer
 var max_delta = 0;
@@ -23,11 +22,11 @@ var raster_time_counter = 0;
 
 // Rasterization Renderer
 var renderingArea;
-var scene;
-var sxRenderer;
+var dynamicScene;
+var sxRendererArray;
 
 // Voxel Renderer (Main Rendering)
-var voxelSubScene;
+var dynamicVoxelScene;
 var mainScene;
 var mainCamera;
 var mainRenderer;
@@ -46,14 +45,15 @@ function init(){
         center: {
             x:0, y:0, z:0,
         },
-        size: 25,
+        size: 30,
     };
     // Rendering from +-5 x y and z
     // Area of interest is 10*10*10 = 1000 voxels
 
     setUpGlCanvas(); // sxRenderer is set in setUpGlCanvas
-    sxRenderer.renderAll();
-    console.log(sxRenderer.floatBuffer);
+    sxRendererArray.forEach(function(sxRenderer){
+        sxRenderer.renderAll();
+    });
 
     return;
 
@@ -65,16 +65,19 @@ function init(){
             // THREE.OrthographicCamera(-1,1,-1,1,-10,10);
             THREE.PerspectiveCamera( 45, 1, 1, 1000 );
         mainCamera.position.z = 4;
-        mainScene = new THREE.Scene();
-        voxelSubScene = [new VoxelScene(), new VoxelScene()];
+        mainScene = new THREE.Scene();                  /// This is a placeholder scene for first frame rendering
+                                                        /// It will be replace by one of dynamicVoxelScene
+        dynamicVoxelScene = [new VoxelSceneManager(), new VoxelSceneManager()];
         mainRenderer = getMainRenderer();
         // TODO fix magic numbers
         mainRenderer.setSize( 500, 500 );
         container[0].appendChild(mainRenderer.domElement);
 
-        scene = getScene(); // setting global var
-        sxRenderer = getSxRenderer(scene);
-        sxRenderer.addDomTo(container[1]);
+        dynamicScene = getDynamicScene(); // setting global var
+        sxRendererArray = getSxRendererArray(dynamicScene);
+        for(var c=0; c<sxRendererArray.length; c++){
+            sxRendererArray[c].addDomTo(container[c+1]);
+        }
         currentVR = 0;
 
         workQueue = new WorkQueue();
@@ -90,8 +93,8 @@ function init(){
                 document.getElementById('GL6'),
             ];
         }
-        function getScene(){
-            var scene = new THREE.Object3D();
+        function getDynamicScene(){
+            var dynamicScene = [];
             var geometry = new
                 THREE.TeapotBufferGeometry(6);
                 // THREE.SphereGeometry( 5, 10, 10 );
@@ -100,18 +103,24 @@ function init(){
                 vertexShader: document.querySelector('#post-vert').textContent.trim(),
                 fragmentShader: document.querySelector('#post-frag').textContent.trim(),
             });
-            var sphere = new THREE.Mesh( geometry, material );
-            scene.add( sphere );
-            var light = new THREE.PointLight( 0xff0000, 1, 100 );
-            light.position.set( 10, 10, 10 );
-            scene.add( light );
-            return scene;
+            var mesh = new THREE.Mesh( geometry, material );
+            dynamicScene.push(mesh);
+            mesh = new THREE.Mesh( new THREE.BoxBufferGeometry( 6, 6, 6 ), material );
+            dynamicScene.push(mesh);
+            return dynamicScene;
         }
         function getMainRenderer(){
             return new THREE.WebGLRenderer();
         }
-        function getSxRenderer(obj3dScene){
-            return new SxRenderer(obj3dScene, renderingArea);
+        function getSxRendererArray(obj3dScene){
+            var sxRendererArray = [];
+            for(var c=0; c<obj3dScene.length; c++){
+                renderingArea.center.x = obj3dScene[c].position.x;
+                renderingArea.center.y = obj3dScene[c].position.y;
+                renderingArea.center.z = obj3dScene[c].position.z;
+                sxRendererArray.push(new SxRenderer(obj3dScene[c], renderingArea));
+            }
+            return sxRendererArray;
         }
     }
 }
@@ -124,7 +133,7 @@ function startProgramLoop(time=0){
 
     function renderLoop(frameTime, time){
         /// All Program Logic
-        programLogic(frameTime);
+        programLogic(frameTime, time);
         // var ProgramLogicTime = performance.now();        /// For performance monitoring
         /// Main Rendering
         mainRenderer.render( mainScene, mainCamera );
@@ -137,7 +146,7 @@ function startProgramLoop(time=0){
         // WorkQueue execution
         var timeBefore = performance.now();
         var timeLeft = SPARE_COMPUTE_TIME - (timeBefore - time);
-        while(workQueue.length > WORKQUEUE_OVERFLOW_SIZE || timeLeft > 0){
+        while(workQueue.isOverflow() || timeLeft > 0){
             if(workQueue.length > 0){
                 var work = workQueue.execute();
                 var delta = performance.now() - timeBefore;
@@ -158,55 +167,77 @@ function startProgramLoop(time=0){
         // console.log(
         //     "T",
         //     ProgramLogicTime - time,
-        //     RenderTime - time,
+        //     RenderTime - ProgramLogicTime,
         //     SpareComputeTime - RenderTime,
         //     "Total",
         //     SpareComputeTime-time);                      /// For performance monitoring
     }
 }
 
-function programLogic(frameTime){
+function programLogic(frameTime, time){
     raster_time_counter += frameTime;
+
+    mainCamera.position.y = 1*Math.sin(time/1000);
+    mainCamera.position.x = 1*Math.cos(time/1000);
+    dynamicScene[0].position.x = 1*Math.sin(performance.now()/1000);
+    dynamicScene[0].position.y = 1*Math.cos(performance.now()/1000);
+    mainCamera.lookAt(dynamicScene[1].position);
 
     if(raster_time_counter > RASTER_FRAMETIME_LIMIT){ // time to preform rasterization
         raster_time_counter = 0;
         // Add work to workQueue
-        workQueue.add(lowPriorityGameLogic);
+        workQueue.add(lowPriorityGameLogic, [frameTime, time]);
         workQueue.add(removeOldVoxelSubScene);
-        for(let c=0; c<6; c++){
-            workQueue.add(renderSixAxis, [c]);
-            workQueue.add(projectRenderedVoxelToSS, [c]);
+        for(let objIndex=0; objIndex<dynamicScene.length; objIndex++){
+            for(let angle=0; angle<6; angle++){
+                workQueue.add(renderSixAxis, [objIndex, angle]);
+                workQueue.add(projectRenderedVoxelToSS, [objIndex, angle]);
+            }
+            workQueue.add(updateVoxelPosition, [objIndex]);
         }
-        // for(let c=0; c<6; c++){
-        // }
         workQueue.add(replaceOldVoxelSubScene);
+        workQueue.setComplete();
     }
 
-    var voxelObject3D = voxelSubScene[currentVR].getThreeJsObject3D();
-    sceneRotation.x += 0.01;
-    // sceneRotation.y += 0.01;
-    voxelObject3D.rotation.x = sceneRotation.x;
-    voxelObject3D.rotation.y = sceneRotation.y;
+    /// Simulate Camera rotation -- need to change to actual Camera rotation
+    // var voxelObject3D = voxelSubScene[currentVR].getThreeJsObject3D();
+    // sceneRotation.x += 0.01;
+    // // sceneRotation.y += 0.01;
+    // voxelObject3D.rotation.x = sceneRotation.x;
+    // voxelObject3D.rotation.y = sceneRotation.y;
     // Work in queue
 
     function lowPriorityGameLogic(){
-        scene.rotation.y += Math.PI/96;
-        sxRenderer.renderPreview();
+        dynamicScene[0].rotation.y += Math.PI/96;
+        dynamicScene[1].rotation.z -= Math.PI/96;
+        sxRendererArray[0].updateRenderingArea({
+            center:{
+                x: dynamicScene[0].position.x,
+                y: dynamicScene[0].position.y,
+            }});
+        sxRendererArray.forEach(function(sxRenderer){
+            sxRenderer.renderPreview();
+        });
     }
     function removeOldVoxelSubScene(){
-        voxelSubScene[(currentVR+1)%2].clear();
+        dynamicVoxelScene[(currentVR+1)%2].clear();
     }
-    function renderSixAxis(angle){
-        sxRenderer.renderAngle(angle);
+    function renderSixAxis(objIndex, angle){
+        sxRendererArray[objIndex].renderAngle(angle);
     }
-    function projectRenderedVoxelToSS(angle){
-        voxelSubScene[(currentVR+1)%2].addVoxel(sxRenderer.floatBuffer[angle], angle);
+    function projectRenderedVoxelToSS(objIndex, angle){
+        dynamicVoxelScene[(currentVR+1)%2].addVoxel(objIndex, sxRendererArray[objIndex].floatBuffer[angle], angle);
+    }
+    function updateVoxelPosition(objIndex){
+        // console.log("EIEI");
+        var voxelPosition = sxRendererArray[objIndex].getPosition();
+        var voxel = dynamicVoxelScene[(currentVR+1)%2].getThreeJsObject3D(objIndex);
+        voxel.position.x = voxelPosition.x;
+        voxel.position.y = voxelPosition.y;
+        voxel.position.z = voxelPosition.z;
     }
     function replaceOldVoxelSubScene(){
-        mainScene.remove(voxelSubScene[currentVR].getThreeJsObject3D());
         currentVR = (currentVR+1)%2;
-        var voxelObject3D = voxelSubScene[currentVR].getThreeJsObject3D();
-        mainScene.add(voxelObject3D);
-        mainCamera.lookAt( voxelObject3D.position );
+        mainScene = dynamicVoxelScene[currentVR].getThreeJsScene();
     }
 }

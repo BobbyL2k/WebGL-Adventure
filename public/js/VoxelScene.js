@@ -11,10 +11,13 @@ var VoxelScene;
             // console.log(object, 'has geometry');
         }
         if(object.material){
-            object.material.dispose();
+            // object.material.dispose();
             // console.log(object, 'has material');
         }
     }
+
+    var color = Math.floor(Math.random()*255*255*255);
+    var MAT = new THREE.MeshBasicMaterial( {color: color} );
 
     class cl_VoxelScene{
         constructor(){
@@ -49,8 +52,7 @@ var VoxelScene;
             var geometry = new THREE.BoxGeometry( 2/di, 2/di, 2/di );
             for(var index=0; index<voxels.length; index+=4){
                 if(voxels[index] !== 0){
-                    var color = Math.floor(Math.random()*255*255*255);
-                    var material = new THREE.MeshBasicMaterial( {color: color} );
+                    var material = MAT;
                     var voxel = new THREE.Mesh( geometry, material );
                     var corX = (index / 4) % di;
                     var corY = Math.floor((index / (4 * di)));
