@@ -21,7 +21,6 @@ var DynamicObject;
             this.voxelObject = [
                 this.voxelScene[0].getThreeJsObject3D(), 
                 this.voxelScene[1].getThreeJsObject3D()];
-            this._size = boundArea.size/2;                  /// TODO remove size after transfor to voxel of size 1
         }
         sampleObjectState(){
             this._real_object3d.rotation.x = this.rotation.x;
@@ -32,9 +31,9 @@ var DynamicObject;
             this._real_object3d.position.y = this.position.y;
             this._real_object3d.position.z = this.position.z;
             this.voxelCenter = {
-                x: Math.round(this._size*this.position.x)/this._size,
-                y: Math.round(this._size*this.position.y)/this._size,
-                z: Math.round(this._size*this.position.z)/this._size,
+                x: Math.round(this.position.x),
+                y: Math.round(this.position.y),
+                z: Math.round(this.position.z),
             };
             this.sxRenderer.updateRenderingArea( { center:this.voxelCenter } );
         }

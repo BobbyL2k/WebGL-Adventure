@@ -1,5 +1,8 @@
 /* jshint esversion:6 */
 
+const viewportWidth = 1000;
+const viewportHeight = 700;
+
 const TARGET_REFRESH_RATE = 60;
 const TARGET_FRAME_TIME = 1000 / TARGET_REFRESH_RATE;
 
@@ -66,7 +69,7 @@ function init(){
         var container = getDomContainer();
 
         // TODO fix magic numbers
-        mainCamera = new THREE.PerspectiveCamera( 45, 1, 1, 1000 );
+        mainCamera = new THREE.PerspectiveCamera( 45, viewportWidth/viewportHeight, 1, 1000 );
         // // // // // // mainCamera = new THREE.OrthographicCamera(-125,125,-125,125,-125,125);
         mainCamera.position.z = 50;
         mainCamera.position.y = 30;
@@ -76,7 +79,7 @@ function init(){
         dynamicVoxelScene = [new THREE.Object3D(), new THREE.Object3D()];
         mainRenderer = getMainRenderer();
         // TODO fix magic numbers
-        mainRenderer.setSize( 500, 500 );
+        mainRenderer.setSize( viewportWidth, viewportHeight );
         container[0].appendChild(mainRenderer.domElement);
 
         dynamicObjectArray = getDynamicObjectArray(); // setting global var
@@ -105,11 +108,12 @@ function init(){
 		pointLight.position.set( 100,100,100 );
         pointLight.castShadow = true;
 	    //pointLight.shadow = new THREE.LightShadow( new THREE.PerspectiveCamera( 30, 1, 1, 200 ) );
+        pointLight.shadow.camera.fov = 90;
         pointLight.shadow.camera.near = 1;
-		pointLight.shadow.camera.far = 300;
-	    pointLight.shadow.bias = 0.5;
-	    pointLight.shadow.mapSize.width = 1024;
-	    pointLight.shadow.mapSize.height = 1024;
+		pointLight.shadow.camera.far = 250;
+	    pointLight.shadow.bias = 0.05;
+	    pointLight.shadow.mapSize.width = 4096;
+	    pointLight.shadow.mapSize.height = 4096;
 		
         mainScene.add( pointLight );
 
@@ -138,15 +142,15 @@ function init(){
         // mainScene.add(groundMesh);
 
         var geometry = new THREE.TeapotBufferGeometry(6);
-        var teaPot = new THREE.Mesh(geometry,materialsHolder.getMaterial(1));
-        teaPot.position.x = 10;
-        teaPot.castShadow = true;
-        teaPot.receiveShadow = true;
+        // var teaPot = new THREE.Mesh(geometry,materialsHolder.getMaterial(1));
+        // teaPot.position.x = 10;
+        // teaPot.castShadow = true;
+        // teaPot.receiveShadow = true;
 
         // var teaPotShadow = new THREE.ShadowMesh( teaPot );
         // mainScene.add( teaPotShadow );
 
-        mainScene.add(teaPot);
+        // mainScene.add(teaPot);
         //mainScene.scale.set(1,-1,1);
 
         workQueue = new WorkQueue();
@@ -250,8 +254,8 @@ function programLogic(frameTime, time){
     raster_time_counter += frameTime;
 
     pointLight.position.y = 200;
-    pointLight.position.z = 50*Math.sin(time/1000);
-    pointLight.position.x = 50*Math.cos(time/1000);
+    // pointLight.position.z = 50*Math.sin(time/1000);
+    // pointLight.position.x = 50*Math.cos(time/1000);
     // pointLightMesh.position = pointLight.position;
     mainCamera.position.z = 50*Math.sin(time/1000);
     mainCamera.position.x = 50*Math.cos(time/1000);
@@ -261,6 +265,8 @@ function programLogic(frameTime, time){
     // groundMesh.position.y = (time+10)%100;
     // dynamicObjectArray[1].rotation.z = time/500;
     // dynamicObjectArray[1].rotation.z = time/500;
+    dynamicObjectArray[1].position.x = 10*Math.sin(time/10000);
+    dynamicObjectArray[1].position.y = 10*Math.cos(time/10000);
     // mainCamera.lookAt(dynamicObjectArray[0].position);
 
     if(raster_time_counter > RASTER_FRAMETIME_LIMIT){ // time to preform rasterization
