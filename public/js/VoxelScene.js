@@ -46,7 +46,7 @@ var VoxelScene;
             }
         }
         addVoxel(voxels, direction, materialsHolder){
-            var ignore = [ 5,4];
+            var ignore = [];
             if(ignore.indexOf(direction) != -1){
                 return;
             }
@@ -57,11 +57,11 @@ var VoxelScene;
             var material = new THREE.MeshBasicMaterial( {color: 0xffffff} );
             for(var index=0; index<voxels.length; index+=4){
                 if(voxels[index] !== 0){
-                    var color = Math.floor(Math.random()*255*255*255);
-                    if(direction == 4)
-                        material = new THREE.MeshBasicMaterial( {color: 0xff0000} );
-                    // var voxel = new THREE.Mesh( geometry, materialsHolder.getMaterial(voxels[index]));
-                    var voxel = new THREE.Mesh( geometry, material);
+                    //var color = Math.floor(Math.random()*255*255*255);
+                    //if(direction == 4)
+                    //    material = new THREE.MeshBasicMaterial( {color: 0xff0000} );
+                    var voxel = new THREE.Mesh( geometry, materialsHolder.getMaterial(voxels[index]));
+                    // var voxel = new THREE.Mesh( geometry, material);
                     // var corX = (index / 4) % di;
                     // var corY = Math.floor((index / (4 * di)));
                     // var corZ = -(Math.round(voxels[index+2] -1));
@@ -74,6 +74,8 @@ var VoxelScene;
                     voxel.position.x = corX;
                     voxel.position.y = corY;
                     voxel.position.z = corZ;
+                    voxel.castShadow = true;
+                    voxel.receiveShadow = true;
                     aPlane.add(voxel);
                 }
             }

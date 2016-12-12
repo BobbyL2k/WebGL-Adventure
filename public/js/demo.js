@@ -38,6 +38,9 @@ var workQueue;
 var materialsHolder;
 // testing
 var groundMesh;
+var pointLight;
+var pointLightMesh;
+var groundMesh;
 
 init();
 startProgramLoop();
@@ -66,6 +69,7 @@ function init(){
         mainCamera = new THREE.PerspectiveCamera( 45, 1, 1, 1000 );
         // // // // // // mainCamera = new THREE.OrthographicCamera(-125,125,-125,125,-125,125);
         mainCamera.position.z = 50;
+        mainCamera.position.y = 30;
         mainCamera.lookAt({x:0,y:0,z:0});
         mainScene = new THREE.Scene();                  /// This is a placeholder scene for first frame rendering
                                                         /// It will be replace by one of dynamicVoxelScene
@@ -85,32 +89,65 @@ function init(){
 
         // Testing Area
         mainRenderer.shadowMap.enabled = true;
-		mainRenderer.shadowMap.type = THREE.PCFShadowMap;
+		mainRenderer.shadowMap.type = THREE.BasicShadowMap;
 
         var ambient = new THREE.AmbientLight(0x090909);
         mainScene.add( ambient );
 
-        var directionalLight = new THREE.DirectionalLight( 0xffffff, 2 );
+        // var directionalLight = new THREE.DirectionalLight( 0xffffff, 2 );
 		// directionalLight.position.set( 2, 1.2, 10 ).normalize();
 		// mainScene.add( directionalLight );
-		directionalLight = new THREE.DirectionalLight( 0xffffff, 2 );
-		directionalLight.position.set( 10, -10, 10 ).normalize();
-        directionalLight.castShadow = true;
-	    directionalLight.shadow = new THREE.LightShadow( new THREE.PerspectiveCamera( 10, -10 ,1 ) );
-	    directionalLight.shadow.bias = 0.0001;
-	    directionalLight.shadow.mapSize.width = 2048;
-	    directionalLight.shadow.mapSize.height = 1024;
-		mainScene.add( directionalLight );
+		// directionalLight = new THREE.DirectionalLight( 0xffffff, 2 );
+		// directionalLight.position.set( 10, -10, 10 ).normalize();
+		// mainScene.add( directionalLight );
 
-        var groundGeo = new THREE.BoxGeometry(30,0.01,40);
-        var gorundMaterial = new THREE.MeshLambertMaterial({color: 0x00ff00});
-        groundMesh = new THREE.Mesh(groundGeo,groundMesh);
-        groundMesh.position.y = -1;
+		pointLight = new THREE.PointLight( 0xffaa00, 2 ,1000);
+		pointLight.position.set( 100,100,100 );
+        pointLight.castShadow = true;
+	    //pointLight.shadow = new THREE.LightShadow( new THREE.PerspectiveCamera( 30, 1, 1, 200 ) );
+        pointLight.shadow.camera.near = 1;
+		pointLight.shadow.camera.far = 300;
+	    pointLight.shadow.bias = 0.5;
+	    pointLight.shadow.mapSize.width = 1024;
+	    pointLight.shadow.mapSize.height = 1024;
+		
+        mainScene.add( pointLight );
+
+        // pointLightMesh = new THREE.Object3D();
+        // pointLightMesh.add(new THREE.Mesh( new THREE.SphereGeometry(1), new THREE.MeshBasicMaterial( {color: 0xff0000} )));
+        // mainScene.add( pointLightMesh );
+
+        var groundGeo = new THREE.BoxGeometry(3000,0.01,3000);
+        var groundMaterial = new THREE.MeshPhongMaterial( {
+					color: 0xa0adaf,
+					shininess: 150,
+					specular: 0xffffff,
+					shading: THREE.SmoothShading
+				} );
+        groundMesh = new THREE.Mesh(groundGeo,groundMaterial);
+        groundMesh.position.y = -10;
+        groundMesh.castShadow = false;
+        groundMesh.receiveShadow = true;
         mainScene.add(groundMesh);
-        mainScene.scale.set(1,-1,1);
-		//var pointLight = new THREE.PointLight( 0xffaa00, 2 );
-		//pointLight.position.set( 2000, 1200, 10000 );
-		//mainScene.add( pointLight );
+
+        // gorundMaterial = new THREE.MeshLambertMaterial({color: 0x00ff00});
+        // groundMesh = new THREE.Mesh(groundGeo,groundMesh);
+        // groundMesh.position.y = -10;
+        // groundMesh.castShadow = true;
+        // groundMesh.receiveShadow = true;
+        // mainScene.add(groundMesh);
+
+        var geometry = new THREE.TeapotBufferGeometry(6);
+        var teaPot = new THREE.Mesh(geometry,materialsHolder.getMaterial(1));
+        teaPot.position.x = 10;
+        teaPot.castShadow = true;
+        teaPot.receiveShadow = true;
+
+        // var teaPotShadow = new THREE.ShadowMesh( teaPot );
+        // mainScene.add( teaPotShadow );
+
+        mainScene.add(teaPot);
+        //mainScene.scale.set(1,-1,1);
 
         workQueue = new WorkQueue();
         return;
@@ -141,7 +178,7 @@ function init(){
                     new THREE.BoxBufferGeometry( 8, 8, 8 ), 
                     material ), 
                 {size:12} );
-            //dynamicScene.push(dynamicObject);
+            dynamicScene.push(dynamicObject);
             return dynamicScene;
         }
         function getMainRenderer(){
@@ -212,8 +249,13 @@ function startProgramLoop(time=0){
 function programLogic(frameTime, time){
     raster_time_counter += frameTime;
 
-    // mainCamera.position.y = 1*Math.sin(time/1000);
-    // mainCamera.position.x = 1*Math.cos(time/1000);
+    pointLight.position.y = 200;
+    pointLight.position.z = 50*Math.sin(time/1000);
+    pointLight.position.x = 50*Math.cos(time/1000);
+    // pointLightMesh.position = pointLight.position;
+    mainCamera.position.z = 50*Math.sin(time/1000);
+    mainCamera.position.x = 50*Math.cos(time/1000);
+    mainCamera.lookAt(mainScene.position);
     // dynamicObjectArray[0].position.x = 2*Math.sin(time/10000);
     // dynamicObjectArray[0].position.y = time%100;
     // groundMesh.position.y = (time+10)%100;
