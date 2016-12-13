@@ -66,11 +66,13 @@ var VoxelScene;
                     // var corY = Math.floor((index / (4 * di)));
                     // var corZ = -(Math.round(voxels[index+2] -1));
                     var pixelX = (index / 4) % di;
-                    var pixelY = Math.floor((index / (4 * di)));
+                    var pixelY = di -1 -Math.floor((index / (4 * di)));
+                    // pixelY = (Math.random() > 0.5?di-1:pixelY);
+                    // pixelY = (Math.random() > 0.5?0:pixelY);
                     // var corX = (Math.random() > 0.5?di/2:-di/2);
                     var corX = pixelX - di/2 + 0.5;
                     var corY = -(pixelY - di/2 + 0.5);
-                    var corZ = Math.floor(voxels[index+2]+0.5) - 0.5; 
+                    var corZ = Math.round(voxels[index+2]) - 0.5; 
                     voxel.position.x = corX;
                     voxel.position.y = corY;
                     voxel.position.z = corZ;
@@ -83,9 +85,9 @@ var VoxelScene;
             if(direction < 4){
                 aPlane.rotation.y = -(Math.PI/2) * direction;
             }else if(direction == 4){
-                aPlane.rotation.x = Math.PI/2;
-            }else{
                 aPlane.rotation.x = -Math.PI/2;
+            }else{
+                aPlane.rotation.x = Math.PI/2;
             }
             //add object
             this.scene.add(aPlane);

@@ -6,7 +6,7 @@ const viewportHeight = 700;
 const TARGET_REFRESH_RATE = 60;
 const TARGET_FRAME_TIME = 1000 / TARGET_REFRESH_RATE;
 
-const RASTER_REFRESH_RATE = 12;
+const RASTER_REFRESH_RATE = 6;
 const RASTER_FRAMETIME_LIMIT = 1000 / RASTER_REFRESH_RATE;
 
 const EXPECT_DELTA = 4;                     // Expect work to take about 2ms
@@ -130,7 +130,7 @@ function init(){
                 shading: THREE.SmoothShading
             } );
             groundMesh = new THREE.Mesh(groundGeo,groundMaterial);
-            groundMesh.position.y = -10;
+            // groundMesh.position.y = 0;
             groundMesh.castShadow = false;
             groundMesh.receiveShadow = true;
             mainScene.add(groundMesh);
@@ -170,21 +170,34 @@ function init(){
         }
         function getDynamicObjectArray(){
             var dynamicScene = [];
-            var teapotSize = 6;
+            var teapotSize = 3;
             var geometry = new THREE.TeapotBufferGeometry(teapotSize);
             //var geometry = new THREE.TeapotBufferGeometry(teapotSize,teapotSize,teapotSize,);
             var material = new THREE.ShaderMaterial({
                 vertexShader: document.querySelector('#post-vert').textContent.trim(),
                 fragmentShader: document.querySelector('#post-frag').textContent.trim(),
             });
-            var dynamicObject = new DynamicObject( new THREE.Mesh( geometry, material ), {size:teapotSize*4} );
-            dynamicObject.position.y = 10;
+            var dynamicObject = new DynamicObject( new THREE.Mesh( geometry, material ), {size:Math.round(teapotSize*3.7)} );
+            dynamicObject.position.y = teapotSize;
             dynamicScene.push(dynamicObject);
+
+            dynamicObject = new DynamicObject( new THREE.Mesh( geometry, material ), {size:Math.round(teapotSize*3.7)} );
+            dynamicObject.position.y = teapotSize;
+            dynamicScene.push(dynamicObject);
+
+            dynamicObject = new DynamicObject( new THREE.Mesh( geometry, material ), {size:Math.round(teapotSize*3.7)} );
+            dynamicObject.position.y = teapotSize;
+            dynamicScene.push(dynamicObject);
+
+            dynamicObject = new DynamicObject( new THREE.Mesh( geometry, material ), {size:Math.round(teapotSize*3.7)} );
+            dynamicObject.position.y = teapotSize;
+            dynamicScene.push(dynamicObject);
+
             dynamicObject = new DynamicObject( 
                 new THREE.Mesh( 
                     new THREE.BoxBufferGeometry( 8, 8, 8 ), 
                     material ), 
-                {size:12} );
+                {size:6} );
             // dynamicScene.push(dynamicObject);
             return dynamicScene;
         }
@@ -286,16 +299,18 @@ function programLogic(frameTime, time){
     // pointLight.position.z = 50*Math.sin(time/1000);
     // pointLight.position.x = 50*Math.cos(time/1000);
     // pointLightMesh.position = pointLight.position;
-    mainCamera.position.z = 50*Math.sin(time/1000);
-    mainCamera.position.x = 50*Math.cos(time/1000);
+    mainCamera.position.z = 50*Math.sin(time/10000);
+    mainCamera.position.x = 50*Math.cos(time/10000);
     mainCamera.lookAt(mainScene.position);
     // dynamicObjectArray[0].position.x = 2*Math.sin(time/10000);
     // dynamicObjectArray[0].position.y = 20;//~~(time/1000)%10;
     // groundMesh.position.y = (time+10)%100;
-    // dynamicObjectArray[1].rotation.z = time/2000;
-    // dynamicObjectArray[1].rotation.y = time/4000;
-    // dynamicObjectArray[1].position.x = 15*Math.sin(time/10000);
-    // dynamicObjectArray[1].position.y = 15*Math.cos(time/10000);
+    // dynamicObjectArray[0].rotation.z = time/2000;
+    for(var c=0; c<3; c++){
+        dynamicObjectArray[c].rotation.y = (time + 20000*c)/4000;
+        dynamicObjectArray[c].position.x = 15*Math.sin((time + 20000*c)/10000);
+        dynamicObjectArray[c].position.z = 15*Math.cos((time + 20000*c)/10000);
+    }
     // mainCamera.lookAt(dynamicObjectArray[0].position);
 
     if(raster_time_counter > RASTER_FRAMETIME_LIMIT){ // time to preform rasterization
