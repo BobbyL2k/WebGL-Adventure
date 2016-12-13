@@ -29,9 +29,9 @@ function init(){
     function setUpGlCanvas(){
         var container = getDomContainer();
         scene = getScene(); // setting global var
-        sxRenderer = new sxRenderer(scene, renderingArea);
+        sxRenderer = new SxRenderer(scene, renderingArea);
         sxRenderer.addDomTo(container[0]);
-        sliceRenderer = new sliceRenderer(scene.clone(), renderingArea);
+        sliceRenderer = new SliceRenderer(scene.clone(), renderingArea);
         sliceRenderer.addDomTo(container[1]);
         return;
 

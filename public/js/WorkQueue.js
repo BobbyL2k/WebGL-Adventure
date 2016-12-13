@@ -20,7 +20,7 @@ class WorkQueue{
         return this.setCounter > 1;
     }
     setComplete(){
-        self.setCounter++;
+        this.setCounter++;
         this.add(function(self){
             self.setCounter--;
         }, [this]);

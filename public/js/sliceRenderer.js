@@ -12,6 +12,8 @@ var SliceRenderer;
         },
     };
 
+    var sliceDepth = 1;
+
     class cl_SliceRenderer{
         constructor(Object3D, renderingArea){
             this._renderingArea = loadDefault(defaultRenderingArea, renderingArea);
@@ -32,7 +34,7 @@ var SliceRenderer;
             if(this.c === undefined) // For Preview
                 this.c = -1;
             this.renderPreview(this.c = (this.c+1)%this._renderingArea.size.z);
-            for(var slice=0; slice<this._renderingArea.size.z; slice++){
+            for(var slice=0; slice<this._renderingArea.size.z/sliceDepth; slice++){
                 this.renderSlice(slice);
             }
         }
@@ -105,8 +107,8 @@ var SliceRenderer;
         }
 
         updateOrthoCameraZ(slice){
-            this.camera.near   = slice -this._renderingArea.size.z/2;
-            this.camera.far    = slice -this._renderingArea.size.z/2 +1;
+            this.camera.near   = slice*sliceDepth -this._renderingArea.size.z/2;
+            this.camera.far    = slice*sliceDepth -this._renderingArea.size.z/2 +sliceDepth;
             this.camera.updateProjectionMatrix();
         }
     }

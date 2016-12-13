@@ -27,6 +27,7 @@ var raster_time_counter = 0;
 var renderingArea;
 var dynamicObjectArray;
 var sxRendererArray;
+var staticObject;
 
 // Voxel Renderer (Main Rendering)
 var dynamicVoxelScene;
@@ -79,79 +80,80 @@ function init(){
         dynamicVoxelScene = [new THREE.Object3D(), new THREE.Object3D()];
         mainRenderer = getMainRenderer();
         // TODO fix magic numbers
-        mainRenderer.setSize( viewportWidth, viewportHeight );
         container[0].appendChild(mainRenderer.domElement);
 
+        staticObject = getStaticObject();
+        staticObject.sxRenderer.addDomTo(container[1]);
+        mainScene.add(staticObject.voxelObject);
         dynamicObjectArray = getDynamicObjectArray(); // setting global var
         for(var c=0; c<dynamicObjectArray.length; c++){
             dynamicVoxelScene[0].add(dynamicObjectArray[c].voxelObject[0]);
             dynamicVoxelScene[1].add(dynamicObjectArray[c].voxelObject[1]);
-            dynamicObjectArray[c].sxRenderer.addDomTo(container[c+1]);
+            dynamicObjectArray[c].sxRenderer.addDomTo(container[c+2]);
         }
         currentVR = 0;
 
-        // Testing Area
-        mainRenderer.shadowMap.enabled = true;
-		mainRenderer.shadowMap.type = THREE.BasicShadowMap;
+        {// Testing Area
 
-        var ambient = new THREE.AmbientLight(0x090909);
-        mainScene.add( ambient );
+            var ambient = new THREE.AmbientLight(0xCCCCCC);
+            mainScene.add( ambient );
 
-        // var directionalLight = new THREE.DirectionalLight( 0xffffff, 2 );
-		// directionalLight.position.set( 2, 1.2, 10 ).normalize();
-		// mainScene.add( directionalLight );
-		// directionalLight = new THREE.DirectionalLight( 0xffffff, 2 );
-		// directionalLight.position.set( 10, -10, 10 ).normalize();
-		// mainScene.add( directionalLight );
+            // var directionalLight = new THREE.DirectionalLight( 0xffffff, 2 );
+            // directionalLight.position.set( 2, 1.2, 10 ).normalize();
+            // mainScene.add( directionalLight );
+            // directionalLight = new THREE.DirectionalLight( 0xffffff, 2 );
+            // directionalLight.position.set( 10, -10, 10 ).normalize();
+            // mainScene.add( directionalLight );
 
-		pointLight = new THREE.PointLight( 0xffaa00, 2 ,1000);
-		pointLight.position.set( 100,100,100 );
-        pointLight.castShadow = true;
-	    //pointLight.shadow = new THREE.LightShadow( new THREE.PerspectiveCamera( 30, 1, 1, 200 ) );
-        pointLight.shadow.camera.fov = 90;
-        pointLight.shadow.camera.near = 1;
-		pointLight.shadow.camera.far = 250;
-	    pointLight.shadow.bias = 0.05;
-	    pointLight.shadow.mapSize.width = 4096;
-	    pointLight.shadow.mapSize.height = 4096;
-		
-        mainScene.add( pointLight );
+            pointLight = new THREE.PointLight( 0xffaa00, 2 ,1000);
+            pointLight.position.set( 100,100,100 );
+            pointLight.castShadow = true;
+            //pointLight.shadow = new THREE.LightShadow( new THREE.PerspectiveCamera( 30, 1, 1, 200 ) );
+            pointLight.shadow.camera.fov = 90;
+            pointLight.shadow.camera.near = 1;
+            pointLight.shadow.camera.far = 250;
+            pointLight.shadow.bias = 0.05;
+            pointLight.shadow.mapSize.width = 4096;
+            pointLight.shadow.mapSize.height = 4096;
+            
+            mainScene.add( pointLight );
 
-        // pointLightMesh = new THREE.Object3D();
-        // pointLightMesh.add(new THREE.Mesh( new THREE.SphereGeometry(1), new THREE.MeshBasicMaterial( {color: 0xff0000} )));
-        // mainScene.add( pointLightMesh );
+            // pointLightMesh = new THREE.Object3D();
+            // pointLightMesh.add(new THREE.Mesh( new THREE.SphereGeometry(1), new THREE.MeshBasicMaterial( {color: 0xff0000} )));
+            // mainScene.add( pointLightMesh );
 
-        var groundGeo = new THREE.BoxGeometry(3000,0.01,3000);
-        var groundMaterial = new THREE.MeshPhongMaterial( {
-					color: 0xa0adaf,
-					shininess: 150,
-					specular: 0xffffff,
-					shading: THREE.SmoothShading
-				} );
-        groundMesh = new THREE.Mesh(groundGeo,groundMaterial);
-        groundMesh.position.y = -10;
-        groundMesh.castShadow = false;
-        groundMesh.receiveShadow = true;
-        mainScene.add(groundMesh);
+            var groundGeo = new THREE.BoxGeometry(3000,0.01,3000);
+            var groundMaterial = new THREE.MeshPhongMaterial( {
+                color: 0xa0adaf,
+                shininess: 150,
+                specular: 0xffffff,
+                shading: THREE.SmoothShading
+            } );
+            groundMesh = new THREE.Mesh(groundGeo,groundMaterial);
+            groundMesh.position.y = -10;
+            groundMesh.castShadow = false;
+            groundMesh.receiveShadow = true;
+            mainScene.add(groundMesh);
 
-        // gorundMaterial = new THREE.MeshLambertMaterial({color: 0x00ff00});
-        // groundMesh = new THREE.Mesh(groundGeo,groundMesh);
-        // groundMesh.position.y = -10;
-        // groundMesh.castShadow = true;
-        // groundMesh.receiveShadow = true;
-        // mainScene.add(groundMesh);
+            // gorundMaterial = new THREE.MeshLambertMaterial({color: 0x00ff00});
+            // groundMesh = new THREE.Mesh(groundGeo,groundMesh);
+            // groundMesh.position.y = -10;
+            // groundMesh.castShadow = true;
+            // groundMesh.receiveShadow = true;
+            // mainScene.add(groundMesh);
 
-        var geometry = new THREE.TeapotBufferGeometry(6);
-        // var teaPot = new THREE.Mesh(geometry,materialsHolder.getMaterial(1));
-        // teaPot.position.x = 10;
-        // teaPot.castShadow = true;
-        // teaPot.receiveShadow = true;
+            var geometry = new THREE.TeapotBufferGeometry(6);
+            var teaPot = new THREE.Mesh(geometry,materialsHolder.getMaterial(1));
+            teaPot.position.x = 10;
+            teaPot.castShadow = true;
+            teaPot.receiveShadow = true;
 
-        // var teaPotShadow = new THREE.ShadowMesh( teaPot );
-        // mainScene.add( teaPotShadow );
+            // var teaPotShadow = new THREE.ShadowMesh( teaPot );
+            // mainScene.add( teaPotShadow );
 
-        // mainScene.add(teaPot);
-        //mainScene.scale.set(1,-1,1);
+            // dynamicObjectArray[0].voxelObject[1].add(teaPot);
+            //mainScene.scale.set(1,-1,1);
+        }
 
         workQueue = new WorkQueue();
         return;
@@ -176,17 +178,42 @@ function init(){
                 fragmentShader: document.querySelector('#post-frag').textContent.trim(),
             });
             var dynamicObject = new DynamicObject( new THREE.Mesh( geometry, material ), {size:teapotSize*4} );
+            dynamicObject.position.y = 10;
             dynamicScene.push(dynamicObject);
             dynamicObject = new DynamicObject( 
                 new THREE.Mesh( 
                     new THREE.BoxBufferGeometry( 8, 8, 8 ), 
                     material ), 
                 {size:12} );
-            dynamicScene.push(dynamicObject);
+            // dynamicScene.push(dynamicObject);
             return dynamicScene;
         }
+        function getStaticObject(){
+            var worldObject = getStaticWorld();
+            var staticObject = new StaticObject(worldObject, {size:40});
+            // staticObject.projectObjectToVoxel(materialsHolder);
+            return staticObject;
+        }
+        function getStaticWorld(){
+            var world = new THREE.Object3D();
+            var material = new THREE.ShaderMaterial({
+                side:THREE.DoubleSide,
+                vertexShader: document.querySelector('#post-vert').textContent.trim(),
+                fragmentShader: document.querySelector('#post-frag').textContent.trim(),
+            });
+            var floorGeo = new
+                // THREE.BoxGeometry(300,1,300);
+                THREE.TeapotBufferGeometry(5);
+            var floorMesh = new THREE.Mesh(floorGeo, material);
+            world.add(floorMesh);
+            return world;
+        }
         function getMainRenderer(){
-            return new THREE.WebGLRenderer();
+            var renderer = new THREE.WebGLRenderer();
+            renderer.setSize( viewportWidth, viewportHeight );
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.BasicShadowMap;
+            return renderer;
         }
         function getSxRendererArray(obj3dScene){
             var sxRendererArray = [];
@@ -215,8 +242,10 @@ function startProgramLoop(time=0){
         mainRenderer.render( mainScene, mainCamera );
         // var RenderTime = performance.now();              /// For performance monitoring
 
-        // if(workDone>0) console.log('work Done', workDone);
-        // if(workQueue.length>0) console.log('work Queue', workQueue.length);
+        // if(workDone>0)
+        //     console.log('work Done', workDone);
+        // if(workQueue.length>0)
+        //     console.log('work Queue', workQueue.length);
         // workDone = 0;                                    /// For WorkQueue monitoring
        
         // WorkQueue execution
@@ -261,12 +290,12 @@ function programLogic(frameTime, time){
     mainCamera.position.x = 50*Math.cos(time/1000);
     mainCamera.lookAt(mainScene.position);
     // dynamicObjectArray[0].position.x = 2*Math.sin(time/10000);
-    // dynamicObjectArray[0].position.y = time%100;
+    // dynamicObjectArray[0].position.y = 20;//~~(time/1000)%10;
     // groundMesh.position.y = (time+10)%100;
-    // dynamicObjectArray[1].rotation.z = time/500;
-    // dynamicObjectArray[1].rotation.z = time/500;
-    dynamicObjectArray[1].position.x = 10*Math.sin(time/10000);
-    dynamicObjectArray[1].position.y = 10*Math.cos(time/10000);
+    // dynamicObjectArray[1].rotation.z = time/2000;
+    // dynamicObjectArray[1].rotation.y = time/4000;
+    // dynamicObjectArray[1].position.x = 15*Math.sin(time/10000);
+    // dynamicObjectArray[1].position.y = 15*Math.cos(time/10000);
     // mainCamera.lookAt(dynamicObjectArray[0].position);
 
     if(raster_time_counter > RASTER_FRAMETIME_LIMIT){ // time to preform rasterization
@@ -290,6 +319,8 @@ function programLogic(frameTime, time){
         dynamicObjectArray.forEach(function(dynamicObject){
             dynamicObject.sampleObjectState();        
             dynamicObject.sxRenderer.renderPreview(Math.floor(performance.now()/1000)%6);
+            // staticObject.sxRenderer.renderPreview( Math.floor(performance.now()/500) % (staticObject.sxRenderer.floatBuffer.length));
+
         });
     }
     function removeOldVoxelSubScene(objIndex){
