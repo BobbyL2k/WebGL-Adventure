@@ -152,7 +152,7 @@ function init(){
             groundMesh.receiveShadow = true;
             mainScene.add(groundMesh);
 
-            femaleObject = loadStaticObjectFile('js/objects/female02.obj',materialsHolder.voxelMaterials[2], 200);
+            femaleObject = loadStaticObjectFile('js/3rdpartylib/objects/female02.obj',materialsHolder.voxelMaterials[2], 200);
         }
 
         workQueue = new WorkQueue();
