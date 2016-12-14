@@ -6,55 +6,68 @@ var height = 30;
 var viewportWidth = GLDom.offsetWidth;
 var viewportHeight = GLDom.offsetHeight;
 var aspect = width / height;
-var camera = new THREE.PerspectiveCamera( 75, aspect, 0.1, 1000 );
+var camera = new THREE.OrthographicCamera(-1,1,-1,1,-10,10);
 var renderer = new THREE.WebGLRenderer();
 var dbCanvasDom = document.getElementById("debugCanvas");
 var dbCanvasCtx = dbCanvasDom.getContext("2d");
 var pixels = new Uint8Array(width * height * 4);
+var float_pixels = new Float32Array(width * height * 4);
 var gl;
+var cubes = new Uint8Array(10 * 10 * 4);
 renderer.setSize( viewportWidth, viewportHeight );
 dbCanvasDom.width = width;
 dbCanvasDom.height = height;
 GLDom.appendChild( renderer.domElement );
 renderer.domElement.style.width = "";
 renderer.domElement.style.height = "";
-
-var geometry = new THREE.SphereGeometry( 1, 10, 10 );
-// var material = new THREE.MeshNormalMaterial();
-var material = new THREE.MeshNormalMaterial({
-    shading: THREE.FlatShading,
-    wireframe: false
-});
-var cube = new THREE.Mesh( geometry, material );
-bufferScene.add( cube );
-camera.position.z = 4;
-
-cameraDefault = {
-    position: {
-        x:0, y:0, z:0
-    }
-};
-
-
-// var bufferScene = new THREE.Scene();
-var bufferTexture = new THREE.WebGLRenderTarget( 
-    width, 
-    height, 
-    { 
-        minFilter: THREE.NearestFilter, 
-        magFilter: THREE.NearestFilter, 
+var bufferTexture = new THREE.WebGLRenderTarget(
+    width,
+    height,
+    {
+        minFilter: THREE.NearestFilter,
+        magFilter: THREE.NearestFilter,
         format: THREE.RGBAFormat,
+        type: THREE.FloatType,
     } );
 
 bufferTexture.texture.generateMipmaps = false;
 bufferTexture.stencilBuffer = false;
+bufferTexture.depthBuffer = true;
 bufferTexture.depthTexture = new THREE.DepthTexture();
+bufferTexture.depthTexture.type = THREE.UnsignedShortType;
 
-var bufferGeometry = new THREE.PlaneBufferGeometry(10,10);
-var material2 = new THREE.MeshBasicMaterial( { color: 0xffffff, map: bufferTexture.depthTexture } );
+
+var geometry = new THREE.SphereGeometry( 1, 10, 10 );
+// var material = new THREE.MeshNormalMaterial();
+var material = new THREE.ShaderMaterial({
+          vertexShader: document.querySelector('#post-vert').textContent.trim(),
+          fragmentShader: document.querySelector('#post-frag').textContent.trim(),
+          uniforms: {
+            cameraNear: { value: -1 },
+            cameraFar:  { value: 1 },
+            //tDiffuse:   { value: bufferTexture.texture },
+            tDepth:     { value: bufferTexture.depthTexture }
+          }
+        });
+
+var cube = new THREE.Mesh( geometry, material );
+//cube.position.y-=1;
+bufferScene.add( cube );
+camera.position.z = 1;
+camera.lookAt(scene.position);
+
+
+for(var i =0; i<cubes.length;i++)
+    cubes[i]=1;
+var aPlane = getObject(cubes);
+scene.add(aPlane);
+//var bufferScene = new THREE.Scene();
+
+var bufferGeometry = new THREE.PlaneBufferGeometry(1,1);
+var material2 = new THREE.MeshBasicMaterial( { color: 0xffffff, map: bufferTexture.texture } );
 var plane = new THREE.Mesh(bufferGeometry,material2);
 
-scene.add(plane);
+//scene.add(plane);
 
 var prevFrameTime = 0;
 var coreRender = function (time) {
@@ -66,18 +79,20 @@ var coreRender = function (time) {
 coreRender(0);
 
 function render(frameTime, time) {
-    cube.rotation.y += 0.001 * frameTime;
+    //cube.rotation.y += 0.001 * frameTime;
     // camera.position.y = cameraDefault.position.y + Math.sin(time / 1000);
     // camera.position.x = cameraDefault.position.y + Math.cos(time / 1000);
-    plane.rotation.x += 0.01;
+    //plane.rotation.x += 0.01;
+    aPlane.rotation.x += 0.1;
+    aPlane.rotation.y += 0.1;
     renderer.render( bufferScene, camera, bufferTexture );
     renderer.render( scene, camera );
     // renderer.render( scene, camera );
-    bufferTexture.texture = bufferTexture.depthTexture;
-    bufferTexture.texture.format = 1023;
-    renderer.readRenderTargetPixels(bufferTexture,0 ,0,width,height,pixels);
-
-    console.log(pixels.filter(function(x){return x!=0}));
+    renderer.readRenderTargetPixels(bufferTexture,0 ,0,width,height,float_pixels);
+    //var canvas = document.querySelector('canvas');
+    //renderer.readRenderTargetDepthPixels(canvas.getContext('webgl2'),bufferTexture,0 ,0,width,height,float_pixels);
+    //console.log(float_pixels);
+    //console.log(pixels.filter(function(x){return x!=0 && x!=255}));
     /// Canvas Code
     var counter = 0;
     dbCanvasCtx.clearRect(0, 0, dbCanvasDom.width, dbCanvasDom.height);
@@ -95,4 +110,26 @@ function render(frameTime, time) {
     dbCanvasCtx.stroke();
     /// END Canvas Code
 
+}
+
+function getObject(cubes) {
+    var group = new THREE.Object3D();
+    var di = Math.sqrt(cubes.length/4);
+
+    var geometry = new THREE.BoxGeometry( 2/di, 2/di, 2/di );
+    var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+    for(var index=0; index<cubes.length; index+=4){
+        if(cubes[index+1] != 0){
+            var color = Math.floor(Math.random()*16777215);
+            var material = new THREE.MeshBasicMaterial( {color: color} );
+            var cube = new THREE.Mesh( geometry, material );
+            var corX = (index / 4) % di;
+            var corY = Math.floor((index / (4 * di)));
+            console.log(corX + " " + corY);
+            cube.position.x = corX*2/di-1+1/di;
+            cube.position.y = corY*2/di-1+1/di;
+            group.add(cube);
+        }
+    }
+    return group;
 }

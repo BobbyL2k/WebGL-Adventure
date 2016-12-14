@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Voxel App</title>
+    <style>
+      html, body { margin: 0; padding: 0; overflow: hidden; }
+      div{float:left;}
+    </style>
+  </head>
+  <body>
+    <div id="GL1" style="image-rendering: pixelated;"></div>
+    <div id="Debug" style="width: 300px; height: 300px; image-rendering: pixelated;"></div>
+    <div id="GL2" style="width: 300px; height: 300px; image-rendering: pixelated;"></div>
+    <div id="GL3" style="width: 300px; height: 300px; image-rendering: pixelated;"></div>
+    <div id="GL4" style="width: 300px; height: 300px; image-rendering: pixelated;"></div>
+    <div id="GL5" style="width: 300px; height: 300px; image-rendering: pixelated;"></div>
+    <div id="GL6" style="width: 300px; height: 300px; image-rendering: pixelated;"></div>
+    <script src="js/3rdpartylib/three.js"></script>
+    <script src="js/3rdpartylib/UnpackDepthRGBAShader.js"></script>
+		<script src="js/3rdpartylib/ShadowMapViewer.js"></script>
+    <script src="js/3rdpartylib/OrbitControls.js"></script>
+    <script src="js/3rdpartylib/FirstPersonControls.js"></script>
+    <script src="js/3rdpartylib/OBJLoader.js"></script>
+    <script src="js/3rdpartylib/TeapotBufferGeometry.js"></script>
+    <script id="post-vert" type="x-shader/x-vertex">
+      varying float vDepthValue;
+      void main() { 
+        vec4 pre_projection_position = modelViewMatrix * vec4(position, 1.0);
+        gl_Position = projectionMatrix * pre_projection_position;
+        vDepthValue = pre_projection_position.z;
+      }
+    </script>
+    <script id="post-frag" type="x-shader/x-fragment">
+      #include <packing>
+      varying float vDepthValue;
+      uniform float materialId;
+      void main() {
+        gl_FragColor.r = materialId;
+        gl_FragColor.g = 0.0;
+        gl_FragColor.b = 0.0;
+        gl_FragColor.a = vDepthValue;
+      }
+    </script>
+    <script src="js/SxRenderer.js"></script>
+    <script src="js/SliceRenderer.js"></script>
+    <script src="js/VoxelScene.js"></script>
+    <script src="js/VoxelSceneManager.js"></script>
+    <script src="js/WorkQueue.js"></script>
+    <script src="js/MaterialsHolder.js"></script>
+    <script src="js/DynamicObject.js"></script>
+    <script src="js/objects/FlippingCube.js"></script>
+    <script src="js/StaticObject.js"></script>
+    <script src="js/demo.js"></script>
+  </body>
+</html>
