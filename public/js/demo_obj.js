@@ -342,7 +342,6 @@ function programLogic(frameTime, time){
     // pointLightMesh.position = pointLight.position;
     mainCamera.position.z = 150*Math.sin(time/5000);
     mainCamera.position.x = 150*Math.cos(time/5000);
-    console.log(mainCamera.position);
     mainCamera.lookAt({x:0,y:34,z:0});
 
     if(raster_time_counter > RASTER_FRAMETIME_LIMIT){ // time to preform rasterization
