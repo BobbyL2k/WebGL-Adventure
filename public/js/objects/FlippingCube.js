@@ -7,18 +7,18 @@ class FlippingCube extends DynamicObject{
                 fragmentShader: document.querySelector('#post-frag').textContent.trim(),
             });
         var geometry = new THREE.BoxBufferGeometry(cubeSize,cubeSize,cubeSize);
-        cube = new THREE.Mesh(geometry,material);
+        cube = new THREE.Mesh(geometry,materialsHolder.voxelMaterials[4]);
         // cube.position.x = -cubeSize/2;
         // cube.position.y = +cubeSize/2;
         cubeObj = new THREE.Object3D();
         cubeObj.add(cube);
         super( cubeObj ,{size:Math.ceil(cubeSize*3)});
+        this.flips = flips;
+        this.timeFactor = 1000;
         // this.direction = 0; // +x -z -x +z
         // this.moveDistance = 3; // before changing direction
-        this.flips = flips;
         // this.time = 0;
         // this.timePerFlip = 1000;
-        this.timeFactor = 1000;
     }
     animate( time ){
         var stime = time / this.timeFactor;
