@@ -27,8 +27,9 @@
     <script id="post-frag" type="x-shader/x-fragment">
       #include <packing>
       varying float vDepthValue;
+      uniform float materialId;
       void main() {
-        gl_FragColor.r = 1.0;
+        gl_FragColor.r = materialId;
         gl_FragColor.g = 0.0;
         gl_FragColor.b = vDepthValue;
       }

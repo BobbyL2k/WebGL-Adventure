@@ -83,7 +83,7 @@ function init(){
         container[0].appendChild(mainRenderer.domElement);
 
         staticObject = getStaticObject();
-        staticObject.sxRenderer.addDomTo(container[1]);
+        staticObject.renderer.addDomTo(container[1]);
         mainScene.add(staticObject.voxelObject);
         dynamicObjectArray = getDynamicObjectArray(); // setting global var
         for(var c=0; c<dynamicObjectArray.length; c++){
@@ -115,7 +115,7 @@ function init(){
             pointLight.shadow.bias = 0.05;
             pointLight.shadow.mapSize.width = 4096;
             pointLight.shadow.mapSize.height = 4096;
-            
+
             mainScene.add( pointLight );
 
             // pointLightMesh = new THREE.Object3D();
@@ -162,7 +162,7 @@ function init(){
             return [
                 document.getElementById('GL1'),
                 document.getElementById('GL2'),
-                document.getElementById('GL3'),   
+                document.getElementById('GL3'),
                 document.getElementById('GL4'),
                 document.getElementById('GL5'),
                 document.getElementById('GL6'),
@@ -170,47 +170,50 @@ function init(){
         }
         function getDynamicObjectArray(){
             var dynamicScene = [];
-            var teapotSize = 3;
+            var teapotSize = 5;
             var geometry = new THREE.TeapotBufferGeometry(teapotSize);
             //var geometry = new THREE.TeapotBufferGeometry(teapotSize,teapotSize,teapotSize,);
-            var material = new THREE.ShaderMaterial({
-                vertexShader: document.querySelector('#post-vert').textContent.trim(),
-                fragmentShader: document.querySelector('#post-frag').textContent.trim(),
-            });
-            var dynamicObject = new DynamicObject( new THREE.Mesh( geometry, material ), {size:Math.round(teapotSize*3.7)} );
+            // var material = new THREE.ShaderMaterial({
+            //     vertexShader: document.querySelector('#post-vert').textContent.trim(),
+            //     fragmentShader: document.querySelector('#post-frag').textContent.trim(),
+            // });
+            var dynamicObject = new DynamicObject( new THREE.Mesh( geometry, materialsHolder.Voxelmaterials[1] ), {size:Math.round(teapotSize*3.7)} );
             dynamicObject.position.y = teapotSize;
             dynamicScene.push(dynamicObject);
 
-            dynamicObject = new DynamicObject( new THREE.Mesh( geometry, material ), {size:Math.round(teapotSize*3.7)} );
-            dynamicObject.position.y = teapotSize;
-            dynamicScene.push(dynamicObject);
+            // dynamicObject = new DynamicObject( new THREE.Mesh( geometry, material ), {size:Math.round(teapotSize*3.7)} );
+            // dynamicObject.position.y = teapotSize;
+            // dynamicScene.push(dynamicObject);
 
-            dynamicObject = new DynamicObject( new THREE.Mesh( geometry, material ), {size:Math.round(teapotSize*3.7)} );
-            dynamicObject.position.y = teapotSize;
-            dynamicScene.push(dynamicObject);
+            // dynamicObject = new DynamicObject( new THREE.Mesh( geometry, material ), {size:Math.round(teapotSize*3.7)} );
+            // dynamicObject.position.y = teapotSize;
+            // dynamicScene.push(dynamicObject);
 
-            dynamicObject = new DynamicObject( new THREE.Mesh( geometry, material ), {size:Math.round(teapotSize*3.7)} );
-            dynamicObject.position.y = teapotSize;
-            dynamicScene.push(dynamicObject);
+            // dynamicObject = new DynamicObject( new THREE.Mesh( geometry, material ), {size:Math.round(teapotSize*3.7)} );
+            // dynamicObject.position.y = teapotSize;
+            // dynamicScene.push(dynamicObject);
 
-            dynamicObject = new DynamicObject( 
-                new THREE.Mesh( 
-                    new THREE.BoxBufferGeometry( 8, 8, 8 ), 
-                    material ), 
+            dynamicObject = new DynamicObject(
+                new THREE.Mesh(
+                    new THREE.BoxBufferGeometry( 8, 8, 8 ),
+                    materialsHolder.Voxelmaterials[2] ),
                 {size:6} );
             // dynamicScene.push(dynamicObject);
             return dynamicScene;
         }
         function getStaticObject(){
             var worldObject = getStaticWorld();
-            var staticObject = new StaticObject(worldObject, {size:40});
-            // staticObject.projectObjectToVoxel(materialsHolder);
+            var staticObject = new StaticObject(worldObject, {size:30});
+            staticObject.projectObjectToVoxel(materialsHolder);
             return staticObject;
         }
         function getStaticWorld(){
             var world = new THREE.Object3D();
             var material = new THREE.ShaderMaterial({
                 side:THREE.DoubleSide,
+                uniforms: {
+                    materialId: { value: 2 },
+                },
                 vertexShader: document.querySelector('#post-vert').textContent.trim(),
                 fragmentShader: document.querySelector('#post-frag').textContent.trim(),
             });
@@ -218,6 +221,9 @@ function init(){
                 // THREE.BoxGeometry(300,1,300);
                 THREE.TeapotBufferGeometry(5);
             var floorMesh = new THREE.Mesh(floorGeo, material);
+            floorMesh.position.y=5;
+            floorMesh.position.x=-5;
+            floorMesh.position.z=-5;
             world.add(floorMesh);
             return world;
         }
@@ -260,7 +266,7 @@ function startProgramLoop(time=0){
         // if(workQueue.length>0)
         //     console.log('work Queue', workQueue.length);
         // workDone = 0;                                    /// For WorkQueue monitoring
-       
+
         // WorkQueue execution
         var timeBefore = performance.now();
         var timeLeft = SPARE_COMPUTE_TIME - (timeBefore - time);
@@ -306,11 +312,13 @@ function programLogic(frameTime, time){
     // dynamicObjectArray[0].position.y = 20;//~~(time/1000)%10;
     // groundMesh.position.y = (time+10)%100;
     // dynamicObjectArray[0].rotation.z = time/2000;
-    for(var c=0; c<3; c++){
-        dynamicObjectArray[c].rotation.y = (time + 20000*c)/4000;
-        dynamicObjectArray[c].position.x = 15*Math.sin((time + 20000*c)/10000);
-        dynamicObjectArray[c].position.z = 15*Math.cos((time + 20000*c)/10000);
-    }
+    dynamicObjectArray[0].position.x = 7;
+    dynamicObjectArray[0].position.z = 7;
+    // for(var c=0; c<3; c++){
+        // dynamicObjectArray[c].rotation.y = (time + 20000*c)/4000;
+        // dynamicObjectArray[c].position.x = 15*Math.sin((time + 20000*c)/10000);
+        // dynamicObjectArray[c].position.z = 15*Math.cos((time + 20000*c)/10000);
+    // }
     // mainCamera.lookAt(dynamicObjectArray[0].position);
 
     if(raster_time_counter > RASTER_FRAMETIME_LIMIT){ // time to preform rasterization
@@ -332,7 +340,7 @@ function programLogic(frameTime, time){
 
     function lowPriorityGameLogic(){
         dynamicObjectArray.forEach(function(dynamicObject){
-            dynamicObject.sampleObjectState();        
+            dynamicObject.sampleObjectState();
             dynamicObject.sxRenderer.renderPreview(Math.floor(performance.now()/1000)%6);
             // staticObject.sxRenderer.renderPreview( Math.floor(performance.now()/500) % (staticObject.sxRenderer.floatBuffer.length));
 
