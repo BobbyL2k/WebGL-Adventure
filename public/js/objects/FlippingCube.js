@@ -25,7 +25,7 @@ class FlippingCube extends DynamicObject{
         const stimePerSide = (Math.PI /2) * this.flips;
         var m = Math.floor((stime / stimePerSide) % 4);
         stime = stime % stimePerSide;
-        console.log(m);
+        // console.log(m);
         if(m == 0){
             this.position.x = Math.sin((stime % (Math.PI/2)) - (Math.PI/4)) * cubeSize / Math.sqrt(2) +
                           cubeSize*Math.floor( stime/(Math.PI/2));
