@@ -1,7 +1,7 @@
 /* jshint esversion:6 */
 
-const viewportWidth = 1000;
-const viewportHeight = 700;
+const viewportWidth = window.innerWidth;
+const viewportHeight = window.innerHeight;
 
 const TARGET_REFRESH_RATE = 60;
 const TARGET_FRAME_TIME = 1000 / TARGET_REFRESH_RATE;
@@ -313,7 +313,7 @@ function init(){
             staticObject.projectObjectToVoxel(materialsHolder);
             staticObject.voxelObject.position.y = 5;
             staticObject.voxelObject.position.z = 20;
-            // staticObject.voxelObject.position.x = 20;
+            staticObject.voxelObject.position.x = 20;
             staticWorld.add(staticObject.voxelObject);
 
             return staticWorld;
@@ -440,7 +440,7 @@ function programLogic(frameTime, time){
     dynamicObjectArray[1].rotation.z = time / 2000;
     dynamicObjectArray[1].position.x = lightOrbitRadius * Math.sin(time/3000);
     dynamicObjectArray[1].position.z = lightOrbitRadius * Math.cos(time/3000);
-    dynamicObjectArray[2].rotation.y += time/ 100000;
+    // dynamicObjectArray[2].rotation.y += time/ 100000;
     // console.log(sphere.rotation);
     // dynamicObjectArray[0].rotation.cz = -(time/2000)%(Math.PI/2);
     // dynamicObjectArray[0].position.x = cubeSize*Math.floor((time/2000)/(Math.PI/2));
