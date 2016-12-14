@@ -107,8 +107,6 @@ function init(){
         mainRenderer = getMainRenderer();
         // TODO fix magic numbers
         container[0].appendChild(mainRenderer.domElement);
-
-
         
         // mainScene.add(getStaticObject());
         // staticObject.sxRenderer.addDomTo(container[1]);
@@ -126,44 +124,19 @@ function init(){
             var ambient = new THREE.AmbientLight(0xCCCCCC);
             mainScene.add( ambient );
 
-
-            // mouseControl =  new THREE.OrbitControls(mainCamera, mainRenderer.domElement);
-            // mouseControl.target.set(0,0,0);
-            // mouseControl.update();
             positionControl = new THREE.FirstPersonControls( mainCamera );
 			positionControl.movementSpeed = 10;
 			positionControl.lookSpeed = 0.125;
 			positionControl.lookVertical = true;
-            // var directionalLight = new THREE.DirectionalLight( 0xffffff, 2 );
-            // directionalLight.position.set( 2, 1.2, 10 ).normalize();
-            // mainScene.add( directionalLight );
-            // directionalLight = new THREE.DirectionalLight( 0xffffff, 2 );
-            // directionalLight.position.set( 10, -10, 10 ).normalize();
-            // mainScene.add( directionalLight );
-
             pointLight = new THREE.PointLight( 0xffffff, 1, 200);
             pointLight.position.set( 0,50,0 );
             pointLight.castShadow = true;
             pointLight.shadow = new THREE.LightShadow( new THREE.PerspectiveCamera( 90, 1, 1, 200 ) );
-            // pointLight.shadow.camera.fov = 90;
-            // pointLight.shadow.camera.near = 1;
-            // pointLight.shadow.camera.far = 1000;
-            // pointLight.shadow.camera.lookAt(0,0,0);
-            // pointLight.target = dynamicObjectArray[0]._real_object3d;
-            // console.log(pointLight.shadow.camera);
-            // pointLight.shadow.camera.right = 50;
-			// pointLight.shadow.camera.left = - 50;
-			// pointLight.shadow.camera.top	= 50;
-			// pointLight.shadow.camera.bottom = - 50;
             pointLight.shadow.bias = 0.2;
             pointLight.shadow.mapSize.width = 1024*2;
             pointLight.shadow.mapSize.height = 1024*2;
 
             mainScene.add( pointLight );
-
-            // pointLightMesh = new THREE.Object3D();
-            // pointLightMesh.add(new THREE.Mesh( new THREE.SphereGeometry(1), new THREE.MeshBasicMaterial( {color: 0xff0000} )));
-            // mainScene.add( pointLightMesh );
 
             var groundGeo = new THREE.BoxGeometry(3000,0.01,3000);
             var groundMaterial = new THREE.MeshPhongMaterial( {
@@ -179,31 +152,7 @@ function init(){
             groundMesh.receiveShadow = true;
             mainScene.add(groundMesh);
 
-
-            // var geometry = new THREE.TeapotBufferGeometry(3);
-            // teapot = new THREE.Mesh(geometry,materialsHolder.getMaterial(1));
-            // teapot.position.x = 10;
-            // teapot.position.y = 10;
-            // teapot.castShadow = true;
-            // teapot.receiveShadow = true;
-
-            // pointLightShadowMapViewer = new THREE.ShadowMapViewer( pointLight );
-		    // pointLightShadowMapViewer.position.x = 0;
-		    // pointLightShadowMapViewer.position.y = 0;
-		    // pointLightShadowMapViewer.size.width = 500;
-		    // pointLightShadowMapViewer.size.height = 500;
-		    // pointLightShadowMapViewer.update();
             femaleObject = loadStaticObjectFile('js/objects/female02.obj',materialsHolder.voxelMaterials[2], 200);
-            // shadowMapViewerRenderer = new THREE.WebGLRenderer();
-            // shadowMapViewerRenderer.setSize( 300, 300 );
-            // shadowMapViewerRenderer.shadowMap.enabled = true;
-            // shadowMapViewerRenderer.shadowMap.type = THREE.BasicShadowMap;
-            // container[6].appendChild(shadowMapViewerRenderer.domElement);
-            // console.log(shadowMapViewerRenderer.domElement);
-            // mainScene.add( new THREE.CameraHelper( pointLight.shadow.camera ) );
-
-
-            // mainScene.add(teapot);
         }
 
         workQueue = new WorkQueue();
@@ -222,64 +171,6 @@ function init(){
         }
         function getDynamicObjectArray(){
             var dynamicScene = [];
-            // var teapotSize = 3;
-            // var sphereSize = 3;
-            // var geometry = new THREE.TeapotBufferGeometry(teapotSize);
-            // var dynamicObject;
-            //var geometry = new THREE.TeapotBufferGeometry(teapotSize,teapotSize,teapotSize,);
-            // var material = new THREE.ShaderMaterial({
-            //     vertexShader: document.querySelector('#post-vert').textContent.trim(),
-            //     fragmentShader: document.querySelector('#post-frag').textContent.trim(),
-            // });
-            // dynamicObject = new DynamicObject( new THREE.Mesh( geometry, materialsHolder.voxelMaterials[1] ), {size:Math.ceil(teapotSize*3.7)} );
-            // dynamicObject.position.y = teapotSize;
-            // // dynamicScene.push(dynamicObject);
-
-            // dynamicObject = new FlippingCube( cubeSize , 4);
-            // dynamicScene.push(dynamicObject);
-            
-            // geometry = new THREE.SphereBufferGeometry( sphereSize);
-            // sphere = new THREE.Mesh( geometry, materialsHolder.voxelMaterials[3] );
-            // dynamicObject = new DynamicObject( sphere , {size:Math.ceil(sphereSize*2)} );
-            // dynamicScene.push(dynamicObject);
-            // dynamicObject.position.y = sphereSize;
-            // dynamicObject.position.x = -20;
-            // dynamicScene.push(dynamicObject);
-
-            // var coneRadius = 6;
-            // var coneHeight = coneRadius * 2;
-            // var coneGeometry = new THREE.ConeBufferGeometry( coneRadius, coneHeight, 4 );
-            // var coneMaterial = materialsHolder.voxelMaterials[2];
-            // var cone = new THREE.Mesh( coneGeometry, coneMaterial );
-            // pyramid = cone;
-            // cone.position.y = coneHeight / 2;
-            // cone.rotation.y = Math.PI/4;
-            // mainScene.add( cone );
-
-            // dynamicObject = new DynamicObject( cone , {size:Math.ceil(coneRadius*2)} );
-            // dynamicScene.push(dynamicObject);
-            // dynamicObject.position.y = coneHeight / 2;
-            // dynamicObject.position.x = -40;
-            // dynamicObject.rotation.y += Math.PI/2;
-            // dynamicScene.push(dynamicObject);
-
-
-            // dynamicObject = new DynamicObject( new THREE.Mesh( geometry, materialsHolder.voxelMaterials[1] ), {size:Math.ceil(teapotSize*3.7)} );
-            // dynamicObject.position.y = teapotSize;
-            // dynamicObject.position.z = -20;
-            // dynamicScene.push(dynamicObject);
-
-            // console.log(femaleObject);
-            // femaleObject = loadObjectFile('js/objects/female02.obj',materialsHolder.voxelMaterials[2], 200);
-            // // oakObject = loadObjectFile('js/objects/Large_Oak_Green_01.obj', materialsHolder.voxelMaterials[2], 30, {x:-1,y:0,z:1});
-            // console.log(femaleObject);
-
-            // dynamicObject = new DynamicObject(
-            //     new THREE.Mesh(
-            //         new THREE.BoxBufferGeometry( 8, 8, 8 ),
-            //         materialsHolder.getMaterial(2)),
-            //     {size:6} );
-            // dynamicScene.push(dynamicObject);
             return dynamicScene;
         }
         function loadObjectFile(filePath, material, size, translate = {x:0,y:0,z:0}){
@@ -453,41 +344,6 @@ function programLogic(frameTime, time){
     mainCamera.position.x = 150*Math.cos(time/5000);
     console.log(mainCamera.position);
     mainCamera.lookAt({x:0,y:34,z:0});
-    // cubeObj.rotation.z -= 0.01;
-    // dynamicObjectArray[0]
-    // mainCamera.lookAt(mainScene.position);
-    // mainCamera.position.x += dummyCamera.position.x-mainCamera.position.x;
-    // mainCamera.position.y += dummyCamera.position.y-mainCamera.position.y;
-    // mainCamera.position.z += dummyCamera.position.z-mainCamera.position.z;
-    // console.log(mainCamera.position + " " + dummyCamera.position);
-    // var scale = ((time/2000)%10)*0.5;
-    // dynamicObjectArray[1]._real_object3d.scale.set(scale,scale,scale);
-    // femaleObject.scale.set(scale,scale,scale);
-    // dynamicObjectArray[1].position.z = -10;
-    // dynamicObjectArray[0].animate(time);
-    // dynamicObjectArray[1].rotation.x = time / 2000;
-    // dynamicObjectArray[1].rotation.z = time / 2000;
-    // dynamicObjectArray[1].position.x = lightOrbitRadius * Math.sin(time/3000);
-    // dynamicObjectArray[1].position.z = lightOrbitRadius * Math.cos(time/3000);
-    // dynamicObjectArray[2].rotation.y += time/ 100000;
-    // console.log(sphere.rotation);
-    // dynamicObjectArray[0].rotation.cz = -(time/2000)%(Math.PI/2);
-    // dynamicObjectArray[0].position.x = cubeSize*Math.floor((time/2000)/(Math.PI/2));
-    // if(cubeObj.rotation.z <= -Math.PI/2){
-    //     cubeObj.rotation.z = 0;
-    //     console.log(cubeSize);
-    // }
-    // teapot.rotation.x += 0.1;
-    // dynamicObjectArray[0].position.x = 2*Math.sin(time/10000);
-    // dynamicObjectArray[0].position.y = 20;//~~(time/1000)%10;
-    // groundMesh.position.y = (time+10)%100;
-    // dynamicObjectArray[0].rotation.z = time/2000;
-    // for(var c=0; c<3; c++){
-    //     dynamicObjectArray[c].rotation.y = (time + 20000*c)/4000;
-    //     dynamicObjectArray[c].position.x = 15*Math.sin((time + 20000*c)/10000);
-    //     dynamicObjectArray[c].position.z = 15*Math.cos((time + 20000*c)/10000);
-    // }
-    // mainCamera.lookAt(dynamicObjectArray[0].position);
 
     if(raster_time_counter > RASTER_FRAMETIME_LIMIT){ // time to preform rasterization
         raster_time_counter = 0;
