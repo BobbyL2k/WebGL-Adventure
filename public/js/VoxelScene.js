@@ -72,7 +72,7 @@ var VoxelScene;
                     // var corX = (Math.random() > 0.5?di/2:-di/2);
                     var corX = pixelX - di/2 + 0.5;
                     var corY = -(pixelY - di/2 + 0.5);
-                    var corZ = Math.round(voxels[index+2]) - 0.5; 
+                    var corZ = Math.round(voxels[index+3]) - 0.5; 
                     voxel.position.x = corX;
                     voxel.position.y = corY;
                     voxel.position.z = corZ;

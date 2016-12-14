@@ -9,16 +9,21 @@
   </head>
   <body>
     <div id="GL1" style="width: 1000px; height: 700px; image-rendering: pixelated;"></div>
+    <div id="Debug" style="width: 300px; height: 300px; image-rendering: pixelated;"></div>
     <div id="GL2" style="width: 300px; height: 300px; image-rendering: pixelated;"></div>
     <div id="GL3" style="width: 300px; height: 300px; image-rendering: pixelated;"></div>
     <div id="GL4" style="width: 300px; height: 300px; image-rendering: pixelated;"></div>
     <div id="GL5" style="width: 300px; height: 300px; image-rendering: pixelated;"></div>
     <div id="GL6" style="width: 300px; height: 300px; image-rendering: pixelated;"></div>
     <script src="js/three.js"></script>
+    <script src="js/UnpackDepthRGBAShader.js"></script>
+		<script src="js/ShadowMapViewer.js"></script>
+    <script src="js/OrbitControls.js"></script>
+    <script src="js/OBJLoader.js"></script>
     <script src="js/TeapotBufferGeometry.js"></script>
     <script id="post-vert" type="x-shader/x-vertex">
       varying float vDepthValue;
-      void main() {
+      void main() { 
         vec4 pre_projection_position = modelViewMatrix * vec4(position, 1.0);
         gl_Position = projectionMatrix * pre_projection_position;
         vDepthValue = pre_projection_position.z;
@@ -31,7 +36,8 @@
       void main() {
         gl_FragColor.r = materialId;
         gl_FragColor.g = 0.0;
-        gl_FragColor.b = vDepthValue;
+        gl_FragColor.b = 0.0;
+        gl_FragColor.a = vDepthValue;
       }
     </script>
     <script src="js/SxRenderer.js"></script>
@@ -41,6 +47,7 @@
     <script src="js/WorkQueue.js"></script>
     <script src="js/MaterialsHolder.js"></script>
     <script src="js/DynamicObject.js"></script>
+    <script src="js/objects/FlippingCube.js"></script>
     <script src="js/StaticObject.js"></script>
     <script src="js/demo.js"></script>
   </body>
