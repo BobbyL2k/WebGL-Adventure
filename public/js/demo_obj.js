@@ -98,7 +98,7 @@ function init(){
         dummyCamera = new THREE.PerspectiveCamera( 45, viewportWidth/viewportHeight, 1, 1000 );
         // // // // // // mainCamera = new THREE.OrthographicCamera(-125,125,-125,125,-125,125);
         mainCamera.position.z =  90;
-        mainCamera.position.y =  35;
+        mainCamera.position.y =  34;
         mainCamera.position.x = -51;
         mainCamera.lookAt({x:0,y:0,z:0});
         mainScene = new THREE.Scene();                  /// This is a placeholder scene for first frame rendering
@@ -395,7 +395,7 @@ function startProgramLoop(time=0){
 
     function renderLoop(frameTime, time){
         /// All Program Logic
-        positionControl.update( clock.getDelta() );
+        // positionControl.update( clock.getDelta() );
         programLogic(frameTime, time);
         // var ProgramLogicTime = performance.now();        /// For performance monitoring
         /// Main Rendering
@@ -449,8 +449,10 @@ function programLogic(frameTime, time){
     pointLight.position.z = lightOrbitRadius * Math.sin(time/10000);
     pointLight.position.x = lightOrbitRadius * Math.cos(time/10000);
     // pointLightMesh.position = pointLight.position;
-    // mainCamera.position.z = 50*Math.sin(time/10000);
-    // mainCamera.position.x = 50*Math.cos(time/10000);
+    mainCamera.position.z = 150*Math.sin(time/5000);
+    mainCamera.position.x = 150*Math.cos(time/5000);
+    console.log(mainCamera.position);
+    mainCamera.lookAt({x:0,y:34,z:0});
     // cubeObj.rotation.z -= 0.01;
     // dynamicObjectArray[0]
     // mainCamera.lookAt(mainScene.position);

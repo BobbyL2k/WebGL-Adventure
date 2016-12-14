@@ -480,7 +480,7 @@ function programLogic(frameTime, time){
     function lowPriorityGameLogic(){
         dynamicObjectArray.forEach(function(dynamicObject){
             dynamicObject.sampleObjectState();
-            dynamicObject.sxRenderer.renderPreview(Math.floor(performance.now()/1000)%6);
+            // dynamicObject.sxRenderer.renderPreview(Math.floor(performance.now()/1000)%6);
             // staticObject.sxRenderer.renderPreview( Math.floor(performance.now()/500) % (staticObject.sxRenderer.floatBuffer.length));
 
         });
